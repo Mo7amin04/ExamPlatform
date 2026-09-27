@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Segoe UI", "Noto Sans Arabic", system-ui, -apple-system, sans-serif;
+  --font-serif: "Georgia", "Times New Roman", "Noto Naskh Arabic", serif;
+
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dbe6fe;
+  --color-brand-200: #bfd3fe;
+  --color-brand-300: #93b4fd;
+  --color-brand-400: #608bfa;
+  --color-brand-500: #3b66f5;
+  --color-brand-600: #2549ea;
+  --color-brand-700: #1d37d7;
+  --color-brand-800: #1e2fae;
+  --color-brand-900: #1e2d89;
+}
+
+@layer base {
+  html {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+  body {
+    @apply min-h-screen font-sans;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+/* Kobalte toast animations */
+.toast[data-opened] {
+  animation: toast-in 150ms ease-out;
+}
+.toast[data-closed] {
+  animation: toast-out 120ms ease-in forwards;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Dialog animations */
+.dialog-overlay[data-expanded] { animation: fade-in 120ms ease-out; }
+.dialog-content[data-expanded] { animation: dialog-in 150ms ease-out; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dialog-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- Printed exam paper ---------- */
+.exam-paper {
+  font-family: var(--font-serif);
+  line-height: 1.55;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm;
+  }
+  html, body {
+    background: white !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-root {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .exam-question {
+    break-inside: avoid;
+  }
+}

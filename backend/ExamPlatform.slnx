@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/ExamPlatform.Tests/ExamPlatform.Tests.csproj" />
+  </Folder>
+  <Project Path="ExamPlatform.Api/ExamPlatform.Api.csproj" />
+  <Project Path="ExamPlatform.Application/ExamPlatform.Application.csproj" />
+  <Project Path="ExamPlatform.Domain/ExamPlatform.Domain.csproj" />
+  <Project Path="ExamPlatform.Infrastructure/ExamPlatform.Infrastructure.csproj" />
+</Solution>
