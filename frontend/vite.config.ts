@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
+  // GitHub Pages serves the app from /<repo>/; the deploy workflow sets VITE_BASE_PATH=/ExamPlatform/.
+  base: process.env.VITE_BASE_PATH ?? '/',
   plugins: [solid(), tailwindcss()],
   resolve: {
     alias: {

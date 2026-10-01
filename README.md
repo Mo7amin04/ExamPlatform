@@ -1,5 +1,7 @@
 # Exam Platform
 
+**Live demo:** https://mo7amin04.github.io/ExamPlatform/
+
 A web-based exam management platform for university teachers: manage courses and a reusable question bank,
 build exams, draft questions with AI (always teacher-reviewed), preview exams as printed papers and export
 exams and answer keys to **PDF** and **Word (.docx)**.
@@ -72,6 +74,7 @@ dotnet test
 - [docs/architecture.md](docs/architecture.md) — Clean Architecture layout, CQRS, security model, business rules
 - [docs/database.md](docs/database.md) — tables, relationships, indexes, constraints
 - [docs/api.md](docs/api.md) — endpoints, response envelope, status codes
+- [docs/deployment.md](docs/deployment.md) — GitHub Pages (frontend) + MonsterASP.NET (API) deployment
 
 ## Repository layout
 

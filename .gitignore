@@ -5,12 +5,18 @@ obj/
 *.suo
 .vs/
 TestResults/
+publish/
 *.trx
 
 # Local configuration / secrets — never commit API keys or production signing keys
 appsettings.*.local.json
 appsettings.Production.json
 secrets.json
+# Visual Studio publish profiles contain deployment credentials
+**/Properties/PublishProfiles/
+*.pubxml
+*.pubxml.user
+*.publishsettings
 .env
 .env.*
 !.env.example

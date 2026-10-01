@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from '@solidjs/router'
 import type { ParentProps } from 'solid-js'
 import { ToastRegion } from '~/components/feedback/toast'
 import { auth } from '~/stores/auth.store'
+import { toAppPath } from '~/utils/basePath'
 
 /**
  * Router root: global toasts and 401 redirect handling.
@@ -13,8 +14,8 @@ export function AppRoot(props: ParentProps) {
   const location = useLocation()
 
   auth.onUnauthorized(() => {
-    if (location.pathname !== '/login') {
-      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`, { replace: true })
+    if (toAppPath(location.pathname) !== '/login') {
+      navigate(`/login?redirect=${encodeURIComponent(toAppPath(location.pathname) + location.search)}`, { replace: true })
     }
   })
 

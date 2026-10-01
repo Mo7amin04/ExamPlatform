@@ -4,6 +4,7 @@ import { LoadingState } from '~/components/feedback/States'
 import { auth } from '~/stores/auth.store'
 import type { RoleName } from '~/types/models'
 import { ForbiddenPage } from '~/pages/errors/ErrorPages'
+import { toAppPath } from '~/utils/basePath'
 
 /**
  * Protects routes: restores the session from storage (validated via /api/auth/me),
@@ -24,7 +25,7 @@ export function RequireAuth(props: ParentProps<{ roles?: RoleName[] }>) {
         <LoadingState label="Restoring your session…" />
       </Match>
       <Match when={!auth.isAuthenticated()}>
-        <Navigate href={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} />
+        <Navigate href={`/login?redirect=${encodeURIComponent(toAppPath(location.pathname) + location.search)}`} />
       </Match>
       <Match when={!allowed()}>
         <ForbiddenPage />

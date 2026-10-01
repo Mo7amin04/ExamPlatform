@@ -142,11 +142,23 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ----- Database initialization (Development) -----
-if (app.Environment.IsDevelopment())
+// ----- Database initialization -----
+// Migrations run when Database:ApplyMigrationsOnStartup is true; demo seeding only when Seed:Enabled (Development);
+// the first administrator is created only when Bootstrap:* values are configured and no users exist.
+// A database problem must not stop the host: it is logged and the API still starts, so /health responds and
+// requests report the real error instead of IIS showing "500.30 - app failed to start".
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    await app.Services.InitializeDatabaseAsync(
-        applyMigrations: configuration.GetValue("Database:ApplyMigrationsOnStartup", false));
+    try
+    {
+        await app.Services.InitializeDatabaseAsync(
+            applyMigrations: configuration.GetValue("Database:ApplyMigrationsOnStartup", false));
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogCritical(ex,
+            "Database initialization failed. Check ConnectionStrings:DefaultConnection and that the database server is reachable.");
+    }
 }
 
 // ----- Pipeline -----
@@ -162,7 +174,7 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseCors(corsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();

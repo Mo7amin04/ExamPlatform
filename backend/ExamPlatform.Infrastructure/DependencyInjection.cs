@@ -71,11 +71,16 @@ public static class DependencyInjection
         // Development seed
         services.Configure<SeedSettings>(configuration.GetSection(SeedSettings.SectionName));
         services.AddScoped<DevelopmentDataSeeder>();
+        services.Configure<BootstrapSettings>(configuration.GetSection(BootstrapSettings.SectionName));
+        services.AddScoped<AdminBootstrapper>();
 
         return services;
     }
 
-    /// <summary>Optionally applies pending migrations and runs the development seeder.</summary>
+    /// <summary>
+    /// Optionally applies pending migrations, then runs the development seeder (only acts when Seed:Enabled)
+    /// and the first-run administrator bootstrap (only acts when Bootstrap values are configured).
+    /// </summary>
     public static async Task InitializeDatabaseAsync(this IServiceProvider services, bool applyMigrations, CancellationToken cancellationToken = default)
     {
         using var scope = services.CreateScope();
@@ -89,5 +94,6 @@ public static class DependencyInjection
         }
 
         await scope.ServiceProvider.GetRequiredService<DevelopmentDataSeeder>().SeedAsync(cancellationToken);
+        await scope.ServiceProvider.GetRequiredService<AdminBootstrapper>().EnsureAdminAsync(cancellationToken);
     }
 }

@@ -1,0 +1,54 @@
+# Builds the SolidJS frontend and publishes it to the gh-pages branch (served by GitHub Pages).
+# Site: https://mo7amin04.github.io/ExamPlatform/
+# The API address defaults to https://examplatform.runasp.net; override it with the repository variable API_BASE_URL
+# (Settings → Secrets and variables → Actions → Variables).
+name: Deploy frontend to GitHub Pages
+
+on:
+  push:
+    branches: [master, main]
+    paths: ['frontend/**', '.github/workflows/deploy-frontend.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL || 'https://examplatform.runasp.net' }}
+
+      # GitHub Pages has no server-side routing: serve the SPA for unknown paths (deep links, refresh).
+      - name: SPA fallback
+        run: |
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
+
+      - name: Publish to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: frontend/dist
+          force_orphan: true

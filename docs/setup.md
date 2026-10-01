@@ -78,6 +78,7 @@ All settings can be provided through `appsettings*.json`, user-secrets (Developm
 | `Cors:AllowedOrigins` | `http://localhost:5173` | SPA origins allowed to call the API directly |
 | `Database:ApplyMigrationsOnStartup` | `false` (`true` in Development) | auto-migrate in Development |
 | `Seed:Enabled` / `Seed:DefaultPassword` / `Seed:EmailDomain` | `false` / empty / `exam-platform.local` | development seeding |
+| `Bootstrap:AdminEmail` / `AdminPassword` / `AdminFullName` | empty | first administrator in production (created only when there are no users) |
 
 ### JWT
 
@@ -109,6 +110,7 @@ npm run build      # type-check + production build to dist/
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `VITE_API_BASE_URL` | empty | API base URL. Empty = same origin (`/api`), which uses the Vite proxy in development |
+| `VITE_BASE_PATH` | `/` | public base path (`/ExamPlatform/` on GitHub Pages) |
 | `VITE_API_PROXY_TARGET` | `http://localhost:5259` | dev-server proxy target |
 
 See `frontend/.env.example`. For production, either serve `dist/` behind the same origin as the API (reverse proxy
