@@ -9,7 +9,7 @@ namespace ExamPlatform.Infrastructure.AI;
 public static class AIPromptBuilder
 {
     public const string SystemInstruction =
-        "You are an experienced university professor and assessment designer. " +
+        "You are an experienced school teacher and assessment designer. " +
         "You write clear, unambiguous, academically rigorous exam questions. " +
         "Always answer with JSON only, exactly matching the requested schema. " +
         "Never include answer hints in the question text.";
@@ -17,7 +17,7 @@ public static class AIPromptBuilder
     public static string BuildGenerationPrompt(QuestionGenerationRequest request)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"Write {request.NumberOfQuestions} exam question(s) for the university course \"{request.CourseCode} - {request.CourseName}\".");
+        sb.AppendLine($"Write {request.NumberOfQuestions} exam question(s) for the school subject \"{request.CourseCode} - {request.CourseName}\".");
         if (!string.IsNullOrWhiteSpace(request.CourseDescription))
             sb.AppendLine($"Course description: {request.CourseDescription}");
         if (!string.IsNullOrWhiteSpace(request.TopicName))
@@ -52,7 +52,7 @@ public static class AIPromptBuilder
     public static string BuildImprovementPrompt(QuestionImprovementRequest request)
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"Improve the following exam question for the university course \"{request.CourseCode} - {request.CourseName}\"" +
+        sb.AppendLine($"Improve the following exam question for the school subject \"{request.CourseCode} - {request.CourseName}\"" +
                       (string.IsNullOrWhiteSpace(request.TopicName) ? "." : $", topic \"{request.TopicName}\"."));
         sb.AppendLine("Improve clarity, correctness, academic quality and distractor plausibility. Keep the same question type and intent.");
         sb.AppendLine(TypeRules(request.Question.Type));

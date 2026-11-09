@@ -264,6 +264,7 @@ export interface ExamFilters {
 // ----- Preview -----
 
 export interface ExamHeader {
+  letterheadLines: readonly string[]
   universityName: string
   departmentName: string
   courseCode: string

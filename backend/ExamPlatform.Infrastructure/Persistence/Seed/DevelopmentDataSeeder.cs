@@ -21,7 +21,7 @@ public sealed class SeedSettings
     public string EmailDomain { get; set; } = "exam-platform.local";
 }
 
-/// <summary>Seeds demo users, departments, courses, topics, questions and exams into an empty database.</summary>
+/// <summary>Seeds demo users, grade levels, subjects, topics, questions and exams into an empty database.</summary>
 public sealed class DevelopmentDataSeeder(
     ApplicationDbContext db,
     IPasswordHasher passwordHasher,
@@ -54,24 +54,25 @@ public sealed class DevelopmentDataSeeder(
         var omar = CreateUser("Dr. Omar Hassan", "omar.hassan", teacherRole);
         db.Users.AddRange(admin, sarah, omar);
 
-        var cs = new Department { Name = "Computer Science", Code = "CS", Description = "Department of Computer Science" };
-        var math = new Department { Name = "Mathematics", Code = "MATH", Description = "Department of Mathematics" };
-        db.Departments.AddRange(cs, math);
+        var firstPrimary = new Department { Name = "First Year Primary", Code = "P1" };
+        var firstSecondary = new Department { Name = "First Year Secondary", Code = "S1" };
+        var thirdSecondaryScience = new Department { Name = "Third Year Secondary — Science", Code = "S3-SCI" };
+        db.Departments.AddRange(firstPrimary, firstSecondary, thirdSecondaryScience);
 
-        var cs101 = CreateCourse(cs, "CS101", "Introduction to Programming", "Fundamentals of programming using Python.", 3, sarah,
+        var cs101 = CreateCourse(firstSecondary, "CS101", "Introduction to Programming", "Fundamentals of programming using Python.", 3, sarah,
             ("Variables and Data Types", "Primitive types, variables, expressions"),
             ("Control Flow", "Conditionals and loops"),
             ("Functions", "Defining and calling functions, scope, recursion"));
-        var cs201 = CreateCourse(cs, "CS201", "Data Structures", "Core data structures and their complexity.", 3, sarah,
+        var cs201 = CreateCourse(thirdSecondaryScience, "CS201", "Data Structures", "Core data structures and their complexity.", 3, sarah,
             ("Arrays and Linked Lists", null),
             ("Stacks and Queues", null),
             ("Trees", "Binary trees, BSTs and traversals"),
             ("Algorithm Complexity", "Big-O notation"));
-        var cs301 = CreateCourse(cs, "CS301", "Database Systems", "Relational databases, SQL and design.", 3, omar,
+        var cs301 = CreateCourse(thirdSecondaryScience, "CS301", "Database Systems", "Relational databases, SQL and design.", 3, omar,
             ("Relational Model", null),
             ("SQL", "Queries, joins and aggregation"),
             ("Normalization", "Functional dependencies and normal forms"));
-        var math201 = CreateCourse(math, "MATH201", "Linear Algebra", "Vectors, matrices and linear transformations.", 3, omar,
+        var math201 = CreateCourse(thirdSecondaryScience, "MATH201", "Linear Algebra", "Vectors, matrices and linear transformations.", 3, omar,
             ("Vectors", null),
             ("Matrices", null),
             ("Eigenvalues and Eigenvectors", null));

@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { A, useNavigate, useSearchParams } from '@solidjs/router'
 import { toast } from '~/components/feedback/toast'
 import { PageHeader } from '~/components/ui/Primitives'
@@ -13,17 +14,17 @@ export default function QuestionCreatePage() {
   return (
     <>
       <PageHeader
-        breadcrumb={<A href="/questions" class="hover:text-slate-700">Question Bank</A>}
-        title="New question"
-        description="The form adapts to the selected question type."
+        breadcrumb={<A href="/questions" class="hover:text-slate-700">{t('Question Bank')}</A>}
+        title={t('New question')}
+        description={t('The form adapts to the selected question type.')}
       />
       <QuestionForm
         initial={emptyDraft(courseId)}
-        submitLabel="Create question"
+        submitLabel={t('Create question')}
         onCancel={back}
         onSubmit={async (input) => {
           const created = await questionsApi.create(input)
-          toast.success('Question created')
+          toast.success(t('Question created'))
           navigate(`/courses/${created.courseId}/questions`)
         }}
       />

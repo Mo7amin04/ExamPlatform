@@ -22,7 +22,7 @@ internal static class ExportFormatting
         : minutes > 60 ? $"{minutes / 60} h {minutes % 60} min"
         : $"{minutes} minutes";
 
-    public static string CourseLine(ExamHeaderDto h) => $"{h.CourseCode} — {h.CourseName}";
+    public static string SubjectLine(ExamHeaderDto h) => $"Subject: {h.CourseCode} — {h.CourseName}";
 
     public static string ExamTypeLabel(ExamType type) => type switch
     {

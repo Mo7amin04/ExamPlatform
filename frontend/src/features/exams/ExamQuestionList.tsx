@@ -1,7 +1,9 @@
+import { t } from '~/utils/i18n'
 import { createSignal, For, Show } from 'solid-js'
 import { IconButton } from '~/components/ui/Button'
 import { DifficultyBadge, QuestionTypeBadge } from '~/features/questions/questionMeta'
 import type { ExamQuestion } from '~/types/models'
+import { formatPoints } from '~/utils/format'
 
 /**
  * Ordered exam questions with drag-and-drop reordering (mouse) plus move up/down buttons (keyboard),
@@ -74,7 +76,7 @@ export function ExamQuestionList(props: {
               >
                 <Show when={props.editable}>
                   <div class="flex flex-col items-center gap-0.5 text-slate-400">
-                    <span class="cursor-grab p-1 active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">
+                    <span class="cursor-grab p-1 active:cursor-grabbing" title={t('Drag to reorder')} aria-hidden="true">
                       <svg viewBox="0 0 24 24" class="size-4" fill="currentColor"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
                     </span>
                   </div>
@@ -91,13 +93,13 @@ export function ExamQuestionList(props: {
                     <DifficultyBadge value={q.difficulty} />
                     <Show when={q.topicName}><span class="text-xs text-slate-500">{q.topicName}</span></Show>
                     <Show when={q.questionStatus === 'Archived'}>
-                      <span class="text-xs font-medium text-amber-700">Archived in bank — replace before publishing</span>
+                      <span class="text-xs font-medium text-amber-700">{t('Archived in bank — replace before publishing')}</span>
                     </Show>
                   </div>
                   <Show when={props.editable}>
                     <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-600">
                       <label class="flex items-center gap-1.5">
-                        Points
+                        {t('Points')}
                         <input
                           type="number"
                           min={0.25}
@@ -112,10 +114,10 @@ export function ExamQuestionList(props: {
                         />
                       </label>
                       <label class="flex items-center gap-1.5">
-                        Section
+                        {t('Section')}
                         <input
                           value={q.section ?? ''}
-                          placeholder="e.g. Part A"
+                          placeholder={t('e.g. Part A')}
                           class="h-7 w-36 rounded-md border border-slate-300 px-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
                           onChange={(e) => {
                             const value = e.currentTarget.value.trim() || null
@@ -127,12 +129,12 @@ export function ExamQuestionList(props: {
                   </Show>
                 </div>
                 <div class="flex shrink-0 flex-col items-end justify-between gap-1">
-                  <span class="whitespace-nowrap text-sm font-semibold tabular-nums text-slate-700">{q.points} pts</span>
+                  <span class="whitespace-nowrap text-sm font-semibold tabular-nums text-slate-700">{formatPoints(q.points)}</span>
                   <Show when={props.editable}>
                     <div class="flex">
-                      <IconButton icon="up" label={`Move question ${index() + 1} up`} disabled={index() === 0} onClick={() => moveTo(q.questionId, index() - 1)} />
-                      <IconButton icon="down" label={`Move question ${index() + 1} down`} disabled={index() === props.questions.length - 1} onClick={() => moveTo(q.questionId, index() + 1)} />
-                      <IconButton icon="trash" label={`Remove question ${index() + 1}`} tone="danger" onClick={() => props.onRemove(q)} />
+                      <IconButton icon="up" label={t('Move question {number} up', { number: index() + 1 })} disabled={index() === 0} onClick={() => moveTo(q.questionId, index() - 1)} />
+                      <IconButton icon="down" label={t('Move question {number} down', { number: index() + 1 })} disabled={index() === props.questions.length - 1} onClick={() => moveTo(q.questionId, index() + 1)} />
+                      <IconButton icon="trash" label={t('Remove question {number}', { number: index() + 1 })} tone="danger" onClick={() => props.onRemove(q)} />
                     </div>
                   </Show>
                 </div>

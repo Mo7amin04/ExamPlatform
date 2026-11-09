@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { createEffect, createResource, createSignal, For, on, Show } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { InlineAlert } from '~/components/feedback/States'
@@ -59,7 +60,7 @@ export function QuestionForm(props: {
     e.preventDefault()
     setFormError(null)
     const clientErrors = validateContent(draft)
-    if (!draft.courseId) clientErrors.courseId = 'Select a course.'
+    if (!draft.courseId) clientErrors.courseId = t('Select a subject.')
     setErrors(clientErrors)
     if (Object.keys(clientErrors).length) return
 
@@ -83,7 +84,7 @@ export function QuestionForm(props: {
 
   const runImprove = async () => {
     if (!draft.courseId || !draft.text.trim()) {
-      toast.info('Add a course and question text first')
+      toast.info(t('Add a subject and question text first'))
       return
     }
     setImproving(true)
@@ -92,7 +93,7 @@ export function QuestionForm(props: {
       const { courseId, topicId, status: _s, tags: _t, ...content } = draft
       setImproved(await aiApi.improve({ courseId, topicId, question: content, instructions: instructions() || undefined }))
     } catch (err) {
-      toast.error('AI improvement failed', getErrorMessage(err))
+      toast.error(t('AI improvement failed'), getErrorMessage(err))
     } finally {
       setImproving(false)
     }
@@ -112,24 +113,24 @@ export function QuestionForm(props: {
       options: q.options.map((o) => ({ ...o })),
     })
     setImproveOpen(false)
-    toast.info('Improved version applied', 'Review the changes, then save.')
+    toast.info(t('Improved version applied'), t('Review the changes, then save.'))
   }
 
   return (
     <form onSubmit={submit} class="grid gap-6 lg:grid-cols-3" novalidate>
       <div class="space-y-6 lg:col-span-2">
         <Show when={props.lockedReason}>
-          <InlineAlert tone="warning" title="Editing is restricted">{props.lockedReason}</InlineAlert>
+          <InlineAlert tone="warning" title={t('Editing is restricted')}>{props.lockedReason}</InlineAlert>
         </Show>
         <Show when={formError()}>
           <InlineAlert tone="error">{formError()!}</InlineAlert>
         </Show>
         <Card>
           <CardHeader
-            title="Question"
+            title={t('Question')}
             actions={
               <Button size="sm" variant="ai" icon="sparkles" onClick={() => { setImproved(null); setImproveOpen(true) }}>
-                Improve with AI
+                {t('Improve with AI')}
               </Button>
             }
           />
@@ -141,20 +142,20 @@ export function QuestionForm(props: {
 
       <div class="space-y-6">
         <Card>
-          <CardHeader title="Classification" />
+          <CardHeader title={t('Classification')} />
           <div class="space-y-4 p-5">
             <SelectInput
-              label="Course"
+              label={t('Subject')}
               required
-              placeholder={courses.loading ? 'Loading…' : 'Select a course'}
+              placeholder={courses.loading ? t('Loading…') : t('Select a subject')}
               options={(courses() ?? []).map((c) => ({ value: c.id, label: `${c.code} — ${c.name}` }))}
               value={draft.courseId}
               onChange={(v) => setDraft('courseId', v)}
               error={errors().courseId}
             />
             <SelectInput
-              label="Topic"
-              placeholder={draft.courseId ? 'No topic' : 'Select a course first'}
+              label={t('Topic')}
+              placeholder={draft.courseId ? t('No topic') : t('Select a subject first')}
               options={(topics() ?? []).map((t) => ({ value: t.id, label: t.name }))}
               value={draft.topicId ?? ''}
               onChange={(v) => setDraft('topicId', v || null)}
@@ -162,11 +163,11 @@ export function QuestionForm(props: {
               error={errors().topicId}
             />
             <SelectInput
-              label="Status"
+              label={t('Status')}
               options={statusOptions}
               value={draft.status ?? 'Draft'}
               onChange={(v) => setDraft('status', v as QuestionStatus)}
-              hint="Only approved questions should be used in final exams."
+              hint={t('Only approved questions should be used in final exams.')}
             />
             <TagInput tags={draft.tags} onChange={(tags) => setDraft('tags', tags)} error={errors().tags} />
           </div>
@@ -175,7 +176,7 @@ export function QuestionForm(props: {
           <Button type="submit" class="flex-1" loading={saving()} disabled={!!props.lockedReason}>
             {props.submitLabel}
           </Button>
-          <Button variant="secondary" onClick={props.onCancel}>Cancel</Button>
+          <Button variant="secondary" onClick={props.onCancel}>{t('Cancel')}</Button>
         </div>
       </div>
 
@@ -183,32 +184,32 @@ export function QuestionForm(props: {
         open={improveOpen()}
         onOpenChange={setImproveOpen}
         size="lg"
-        title="Improve with AI"
-        description="The AI proposes a revised version. Nothing changes until you apply it."
+        title={t('Improve with AI')}
+        description={t('The AI proposes a revised version. Nothing changes until you apply it.')}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setImproveOpen(false)}>Close</Button>
-            <Show when={improved()} fallback={<Button variant="ai" icon="sparkles" loading={improving()} onClick={runImprove}>Generate improvement</Button>}>
-              <Button variant="secondary" icon="refresh" loading={improving()} onClick={runImprove}>Try again</Button>
-              <Button icon="check" onClick={applyImproved}>Apply to form</Button>
+            <Button variant="secondary" onClick={() => setImproveOpen(false)}>{t('Close')}</Button>
+            <Show when={improved()} fallback={<Button variant="ai" icon="sparkles" loading={improving()} onClick={runImprove}>{t('Generate improvement')}</Button>}>
+              <Button variant="secondary" icon="refresh" loading={improving()} onClick={runImprove}>{t('Try again')}</Button>
+              <Button icon="check" onClick={applyImproved}>{t('Apply to form')}</Button>
             </Show>
           </>
         }
       >
         <div class="space-y-4">
-          <label class="block text-sm font-medium text-slate-700" for="improve-instructions">Instructions (optional)</label>
+          <label class="block text-sm font-medium text-slate-700" for="improve-instructions">{t('Instructions (optional)')}</label>
           <textarea
             id="improve-instructions"
             rows={2}
             class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-            placeholder="e.g. Make the distractors more plausible, simplify the wording…"
+            placeholder={t('e.g. Make the distractors more plausible, simplify the wording…')}
             value={instructions()}
             onInput={(e) => setInstructions(e.currentTarget.value)}
           />
           <Show when={improved()}>
             {(q) => (
               <div class="rounded-lg border border-violet-200 bg-violet-50/40 p-4">
-                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-violet-700">Proposed version</p>
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-violet-700">{t('Proposed version')}</p>
                 <QuestionContentView value={q()} showAnswers />
                 <Show when={q().issues.length}>
                   <ul class="mt-3 list-inside list-disc text-xs text-amber-700">

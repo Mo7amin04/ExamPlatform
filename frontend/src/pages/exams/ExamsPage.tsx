@@ -1,3 +1,4 @@
+import { t, translateMessage } from '~/utils/i18n'
 import { useNavigate, useSearchParams } from '@solidjs/router'
 import { createResource, createSignal, Match, Switch } from 'solid-js'
 import { createStore } from 'solid-js/store'
@@ -13,7 +14,7 @@ import { getErrorMessage } from '~/services/api'
 import { coursesApi } from '~/services/courses.api'
 import { examsApi } from '~/services/exams.api'
 import type { ExamFilters, ExamStatus, ExamSummary, ExamType } from '~/types/models'
-import { formatDate, formatDuration } from '~/utils/format'
+import { formatDate, formatDuration, formatPoints } from '~/utils/format'
 
 export default function ExamsPage() {
   const navigate = useNavigate()
@@ -37,16 +38,16 @@ export default function ExamsPage() {
 
   const remove = (exam: ExamSummary) =>
     confirm.ask({
-      title: `Delete "${exam.title}"?`,
-      description: 'Never-published exams are deleted. Exams with published history are archived to preserve records.',
-      confirmLabel: 'Delete',
+      title: t('Delete {name}?', { name: exam.title }),
+      description: t('Never-published exams are deleted. Exams with published history are archived to preserve records.'),
+      confirmLabel: t('Delete'),
       onConfirm: async () => {
         try {
           const response = await examsApi.remove(exam.id)
-          toast.success(response.data.archived ? 'Exam archived' : 'Exam deleted', response.message)
+          toast.success(response.data.archived ? t('Exam archived') : t('Exam deleted'), response.message && translateMessage(response.message))
           refetch()
         } catch (err) {
-          toast.error('Could not delete exam', getErrorMessage(err))
+          toast.error(t('Could not delete exam'), getErrorMessage(err))
         }
       },
     })
@@ -54,23 +55,23 @@ export default function ExamsPage() {
   return (
     <>
       <PageHeader
-        title="Exams"
-        description="Build, preview, publish and export exams."
-        actions={<Button icon="plus" onClick={() => navigate('/exams/new')}>New exam</Button>}
+        title={t('Exams')}
+        description={t('Build, preview, publish and export exams.')}
+        actions={<Button icon="plus" onClick={() => navigate('/exams/new')}>{t('New exam')}</Button>}
       />
       <Card>
         <div class="grid gap-3 border-b border-slate-100 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <TextInput placeholder="Search by title or course…" aria-label="Search exams" value={search()} onInput={(e) => onSearch(e.currentTarget.value)} />
+          <TextInput placeholder={t('Search by title or subject…')} aria-label={t('Search exams')} value={search()} onInput={(e) => onSearch(e.currentTarget.value)} />
           <SelectInput
-            aria-label="Course"
-            placeholder="All courses"
+            aria-label={t('Subject')}
+            placeholder={t('All subjects')}
             options={(courses() ?? []).map((c) => ({ value: c.id, label: c.code }))}
             value={filters.courseId ?? ''}
             onChange={(v) => setFilters({ courseId: v || undefined, page: 1 })}
           />
-          <SelectInput aria-label="Type" placeholder="All types" options={examTypeOptions} value={filters.type ?? ''}
+          <SelectInput aria-label={t('Type')} placeholder={t('All types')} options={examTypeOptions} value={filters.type ?? ''}
             onChange={(v) => setFilters({ type: (v || undefined) as ExamType | undefined, page: 1 })} />
-          <SelectInput aria-label="Status" placeholder="Active (not archived)" options={examStatusOptions} value={filters.status ?? ''}
+          <SelectInput aria-label={t('Status')} placeholder={t('Active (not archived)')} options={examStatusOptions} value={filters.status ?? ''}
             onChange={(v) => setFilters({ status: (v || undefined) as ExamStatus | undefined, page: 1 })} />
         </div>
         <Switch>
@@ -81,8 +82,8 @@ export default function ExamsPage() {
             <SkeletonRows rows={6} />
           </Match>
           <Match when={result.latest?.items.length === 0}>
-            <EmptyState icon="exam" title="No exams found" description="Create an exam and add questions from your question bank."
-              action={<Button size="sm" icon="plus" onClick={() => navigate('/exams/new')}>New exam</Button>} />
+            <EmptyState icon="exam" title={t('No exams found')} description={t('Create an exam and add questions from your question bank.')}
+              action={<Button size="sm" icon="plus" onClick={() => navigate('/exams/new')}>{t('New exam')}</Button>} />
           </Match>
           <Match when={result.latest}>
             {(data) => (
@@ -93,7 +94,7 @@ export default function ExamsPage() {
                   onRowClick={(e) => navigate(`/exams/${e.id}/edit`)}
                   columns={[
                     {
-                      header: 'Exam',
+                      get header() { return t('Exam') },
                       cell: (e) => (
                         <div>
                           <p class="font-medium text-slate-900">{e.title}</p>
@@ -101,20 +102,20 @@ export default function ExamsPage() {
                         </div>
                       ),
                     },
-                    { header: 'Type', cell: (e) => e.type },
-                    { header: 'Questions', cell: (e) => <span class="tabular-nums">{e.questionCount}</span> },
-                    { header: 'Total', cell: (e) => <span class="tabular-nums">{e.totalPoints} pts</span> },
-                    { header: 'Duration', cell: (e) => formatDuration(e.durationMinutes) },
-                    { header: 'Date', cell: (e) => <span class="whitespace-nowrap">{formatDate(e.examDate)}</span> },
-                    { header: 'Status', cell: (e) => <ExamStatusBadge value={e.status} /> },
+                    { get header() { return t('Type') }, cell: (e) => t(e.type) },
+                    { get header() { return t('Questions') }, cell: (e) => <span class="tabular-nums">{e.questionCount}</span> },
+                    { get header() { return t('Total') }, cell: (e) => <span class="tabular-nums">{formatPoints(e.totalPoints)}</span> },
+                    { get header() { return t('Duration') }, cell: (e) => formatDuration(e.durationMinutes) },
+                    { get header() { return t('Date') }, cell: (e) => <span class="whitespace-nowrap">{formatDate(e.examDate)}</span> },
+                    { get header() { return t('Status') }, cell: (e) => <ExamStatusBadge value={e.status} /> },
                     {
                       header: '',
                       class: 'text-end',
                       cell: (e) => (
                         <div class="flex justify-end gap-0.5" onClick={(ev) => ev.stopPropagation()}>
-                          <IconButton icon="eye" label="Preview" onClick={() => navigate(`/exams/${e.id}/preview`)} />
-                          <IconButton icon="edit" label="Open builder" onClick={() => navigate(`/exams/${e.id}/edit`)} />
-                          <IconButton icon="trash" label="Delete" tone="danger" disabled={e.status === 'Archived'} onClick={() => remove(e)} />
+                          <IconButton icon="eye" label={t('Preview')} onClick={() => navigate(`/exams/${e.id}/preview`)} />
+                          <IconButton icon="edit" label={t('Open builder')} onClick={() => navigate(`/exams/${e.id}/edit`)} />
+                          <IconButton icon="trash" label={t('Delete')} tone="danger" disabled={e.status === 'Archived'} onClick={() => remove(e)} />
                         </div>
                       ),
                     },

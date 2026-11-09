@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { createEffect, createResource, createSignal, For, Match, Show, Switch } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { EmptyState, ErrorState, LoadingState } from '~/components/feedback/States'
@@ -48,14 +49,14 @@ export function QuestionPickerDialog(props: {
       open={props.open}
       onOpenChange={props.onOpenChange}
       size="xl"
-      title="Add questions from the question bank"
-      description="Only non-archived questions from this exam's course that are not already in the exam are listed."
+      title={t('Add questions from the question bank')}
+      description={t('Only non-archived questions from this exam\'s subject that are not already in the exam are listed.')}
       footer={
         <>
-          <span class="me-auto self-center text-sm text-slate-600">{selected().length} selected</span>
-          <Button variant="secondary" onClick={() => props.onOpenChange(false)}>Cancel</Button>
+          <span class="me-auto self-center text-sm text-slate-600">{t('{count} selected', { count: selected().length })}</span>
+          <Button variant="secondary" onClick={() => props.onOpenChange(false)}>{t('Cancel')}</Button>
           <Button icon="plus" disabled={!selected().length} loading={adding()} onClick={add}>
-            Add {selected().length || ''} question{selected().length === 1 ? '' : 's'}
+            {selected().length ? t('Add selected ({count})', { count: selected().length }) : t('Add questions')}
           </Button>
         </>
       }
@@ -71,7 +72,7 @@ export function QuestionPickerDialog(props: {
           <LoadingState />
         </Match>
         <Match when={result.latest?.items.length === 0}>
-          <EmptyState icon="questions" title="No available questions" description="All matching questions are already in this exam, or the course has none yet." />
+          <EmptyState icon="questions" title={t('No available questions')} description={t('All matching questions are already in this exam, or the subject has none yet.')} />
         </Match>
         <Match when={result.latest}>
           {(data) => (

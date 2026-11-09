@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { A, useNavigate, useSearchParams } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 import { createStore } from 'solid-js/store'
@@ -17,7 +18,7 @@ export default function ExamCreatePage() {
     courseId: typeof params.courseId === 'string' ? params.courseId : '',
     title: '',
     description: '',
-    instructions: 'Answer all questions. Write your answers clearly.',
+    instructions: t('Answer all questions. Write your answers clearly.'),
     type: 'Quiz',
     durationMinutes: 60,
     examDate: null,
@@ -35,7 +36,7 @@ export default function ExamCreatePage() {
     setSaving(true)
     try {
       const created = await examsApi.create({ ...exam })
-      toast.success('Exam created', 'Now add questions to your exam.')
+      toast.success(t('Exam created'), t('Now add questions to your exam.'))
       navigate(`/exams/${created.id}/edit`, { replace: true })
     } catch (err) {
       setErrors(getFieldErrors(err))
@@ -47,10 +48,10 @@ export default function ExamCreatePage() {
 
   return (
     <>
-      <PageHeader breadcrumb={<A href="/exams" class="hover:text-slate-700">Exams</A>} title="New exam" description="Start with the exam settings; you will add questions next." />
+      <PageHeader breadcrumb={<A href="/exams" class="hover:text-slate-700">{t('Exams')}</A>} title={t('New exam')} description={t('Start with the exam settings; you will add questions next.')} />
       <form class="max-w-2xl" onSubmit={submit} novalidate>
         <Card>
-          <CardHeader title="Exam settings" />
+          <CardHeader title={t('Exam settings')} />
           <div class="space-y-4 p-5">
             <Show when={formError()}>
               <InlineAlert tone="error">{formError()!}</InlineAlert>
@@ -59,8 +60,8 @@ export default function ExamCreatePage() {
           </div>
         </Card>
         <div class="mt-4 flex gap-2">
-          <Button type="submit" loading={saving()}>Create and add questions</Button>
-          <Button variant="secondary" onClick={() => navigate('/exams')}>Cancel</Button>
+          <Button type="submit" loading={saving()}>{t('Create and add questions')}</Button>
+          <Button variant="secondary" onClick={() => navigate('/exams')}>{t('Cancel')}</Button>
         </div>
       </form>
     </>

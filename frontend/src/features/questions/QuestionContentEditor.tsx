@@ -1,8 +1,9 @@
+import { t } from '~/utils/i18n'
 import { For, Index, Match, Show, Switch, createUniqueId } from 'solid-js'
 import { SelectInput, TextArea, TextInput } from '~/components/forms/Fields'
 import { Button, IconButton } from '~/components/ui/Button'
 import type { QuestionContent, QuestionOptionInput, QuestionType } from '~/types/models'
-import { bloomOptions, difficultyOptions, questionTypeOptions, usesOptions } from './questionMeta'
+import { bloomOptions, difficultyOptions, questionOptionLabel, questionTypeOptions, usesOptions } from './questionMeta'
 
 export type ContentUpdater = <K extends keyof QuestionContent>(key: K, value: QuestionContent[K]) => void
 
@@ -33,19 +34,19 @@ export function defaultOptionsFor(type: QuestionType): QuestionOptionInput[] {
 /** Client-side mirror of the server's content rules (the server remains authoritative). */
 export function validateContent(q: QuestionContent): Record<string, string> {
   const errors: Record<string, string> = {}
-  if (!q.text.trim()) errors.text = 'Question text is required.'
-  if (!(q.points > 0)) errors.points = 'Points must be greater than zero.'
+  if (!q.text.trim()) errors.text = t('Question text is required.')
+  if (!(q.points > 0)) errors.points = t('Points must be greater than zero.')
   if ((q.type === 'ShortAnswer' || q.type === 'FillBlank') && !q.expectedAnswer?.trim())
-    errors.expectedAnswer = 'An expected answer is required for this question type.'
+    errors.expectedAnswer = t('An expected answer is required for this question type.')
   if (usesOptions(q.type)) {
-    if (q.options.some((o) => !o.text.trim())) errors.options = 'Every option needs text.'
+    if (q.options.some((o) => !o.text.trim())) errors.options = t('Every option needs text.')
     const texts = q.options.map((o) => o.text.trim().toLowerCase()).filter(Boolean)
-    if (new Set(texts).size !== texts.length) errors.options = 'Options must not contain duplicates.'
+    if (new Set(texts).size !== texts.length) errors.options = t('Options must not contain duplicates.')
     const correct = q.options.filter((o) => o.isCorrect).length
-    if ((q.type === 'MultipleChoice' || q.type === 'TrueFalse') && correct !== 1) errors.options = 'Mark exactly one correct answer.'
-    if (q.type === 'MultipleSelect' && correct < 1) errors.options = 'Mark at least one correct answer.'
-    if (q.type === 'Matching' && q.options.some((o) => !o.matchText?.trim())) errors.options = 'Every pair needs a matching item.'
-    if (q.options.length < 2) errors.options = 'Add at least two options.'
+    if ((q.type === 'MultipleChoice' || q.type === 'TrueFalse') && correct !== 1) errors.options = t('Mark exactly one correct answer.')
+    if (q.type === 'MultipleSelect' && correct < 1) errors.options = t('Mark at least one correct answer.')
+    if (q.type === 'Matching' && q.options.some((o) => !o.matchText?.trim())) errors.options = t('Every pair needs a matching item.')
+    if (q.options.length < 2) errors.options = t('Add at least two options.')
   }
   return errors
 }
@@ -86,32 +87,32 @@ export function QuestionContentEditor(props: {
       <div class="grid gap-4 sm:grid-cols-4">
         <SelectInput
           class="sm:col-span-2"
-          label="Question type"
+          label={t('Question type')}
           required
           options={questionTypeOptions}
           value={props.value.type}
           onChange={(v) => changeType(v as QuestionType)}
           disabled={props.lockType}
         />
-        <SelectInput label="Difficulty" options={difficultyOptions} value={props.value.difficulty} onChange={(v) => props.update('difficulty', v as QuestionContent['difficulty'])} />
-        <SelectInput label="Bloom level" options={bloomOptions} value={props.value.bloomLevel} onChange={(v) => props.update('bloomLevel', v as QuestionContent['bloomLevel'])} />
+        <SelectInput label={t('Difficulty')} options={difficultyOptions} value={props.value.difficulty} onChange={(v) => props.update('difficulty', v as QuestionContent['difficulty'])} />
+        <SelectInput label={t('Bloom level')} options={bloomOptions} value={props.value.bloomLevel} onChange={(v) => props.update('bloomLevel', v as QuestionContent['bloomLevel'])} />
       </div>
 
       <TextArea
-        label="Question"
+        label={t('Question')}
         required
         rows={4}
         value={props.value.text}
         onInput={(e) => props.update('text', e.currentTarget.value)}
         error={props.errors.text}
-        hint={props.value.type === 'FillBlank' ? 'Mark each blank with _____ (five underscores).' : undefined}
+        hint={props.value.type === 'FillBlank' ? t('Mark each blank with _____ (five underscores).') : undefined}
       />
 
       <Switch>
         <Match when={props.value.type === 'MultipleChoice' || props.value.type === 'TrueFalse' || props.value.type === 'MultipleSelect'}>
           <fieldset>
             <legend class="mb-2 text-sm font-medium text-slate-700">
-              {props.value.type === 'MultipleSelect' ? 'Options — tick every correct answer' : 'Options — select the correct answer'}
+              {props.value.type === 'MultipleSelect' ? t('Options — tick every correct answer') : t('Options — select the correct answer')}
             </legend>
             <div class="space-y-2">
               <Index each={props.value.options}>
@@ -122,81 +123,81 @@ export function QuestionContentEditor(props: {
                       name={groupName}
                       class="size-4 accent-emerald-600"
                       checked={option().isCorrect}
-                      aria-label={`Mark option ${letter(i)} as correct`}
+                      aria-label={t('Mark option {letter} as correct', { letter: letter(i) })}
                       onChange={(e) => (props.value.type === 'MultipleSelect' ? patchOption(i, { isCorrect: e.currentTarget.checked }) : setSingleCorrect(i))}
                     />
                     <span class="w-5 text-sm font-semibold text-slate-500">{letter(i)}.</span>
                     <input
                       class="h-9 min-w-0 flex-1 rounded-md border border-slate-300 px-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50"
-                      value={option().text}
-                      placeholder={`Option ${letter(i)}`}
-                      aria-label={`Option ${letter(i)} text`}
+                      value={questionOptionLabel(props.value.type, option().text)}
+                      placeholder={t('Option {letter}', { letter: letter(i) })}
+                      aria-label={t('Option {letter} text', { letter: letter(i) })}
                       disabled={props.value.type === 'TrueFalse'}
                       onInput={(e) => patchOption(i, { text: e.currentTarget.value })}
                     />
                     <Show when={props.value.type !== 'TrueFalse'}>
-                      <IconButton icon="trash" label={`Remove option ${letter(i)}`} tone="danger" disabled={props.value.options.length <= 2} onClick={() => removeOption(i)} />
+                      <IconButton icon="trash" label={t('Remove option {letter}', { letter: letter(i) })} tone="danger" disabled={props.value.options.length <= 2} onClick={() => removeOption(i)} />
                     </Show>
                   </div>
                 )}
               </Index>
             </div>
             <Show when={props.value.type !== 'TrueFalse' && props.value.options.length < maxOptions()}>
-              <Button class="mt-2" size="sm" variant="ghost" icon="plus" onClick={addOption}>Add option</Button>
+              <Button class="mt-2" size="sm" variant="ghost" icon="plus" onClick={addOption}>{t('Add option')}</Button>
             </Show>
           </fieldset>
         </Match>
 
         <Match when={props.value.type === 'Matching'}>
           <fieldset>
-            <legend class="mb-2 text-sm font-medium text-slate-700">Pairs — each item and its correct match (the right column is shuffled when printed)</legend>
+            <legend class="mb-2 text-sm font-medium text-slate-700">{t('Pairs — each item and its correct match (the right column is shuffled when printed)')}</legend>
             <div class="space-y-2">
               <Index each={props.value.options}>
                 {(pair, i) => (
                   <div class="flex items-center gap-2">
                     <span class="w-5 text-sm font-semibold text-slate-500">{i + 1}.</span>
                     <input class="h-9 min-w-0 flex-1 rounded-md border border-slate-300 px-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-                      value={pair().text} placeholder="Item" aria-label={`Item ${i + 1}`} onInput={(e) => patchOption(i, { text: e.currentTarget.value })} />
+                      value={pair().text} placeholder={t('Item')} aria-label={t('Item {number}', { number: i + 1 })} onInput={(e) => patchOption(i, { text: e.currentTarget.value })} />
                     <span class="text-slate-400 rtl:rotate-180">→</span>
                     <input class="h-9 min-w-0 flex-1 rounded-md border border-slate-300 px-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-                      value={pair().matchText ?? ''} placeholder="Matches" aria-label={`Match for item ${i + 1}`} onInput={(e) => patchOption(i, { matchText: e.currentTarget.value })} />
-                    <IconButton icon="trash" label={`Remove pair ${i + 1}`} tone="danger" disabled={props.value.options.length <= 2} onClick={() => removeOption(i)} />
+                      value={pair().matchText ?? ''} placeholder={t('Matches')} aria-label={t('Match for item {number}', { number: i + 1 })} onInput={(e) => patchOption(i, { matchText: e.currentTarget.value })} />
+                    <IconButton icon="trash" label={t('Remove pair {number}', { number: i + 1 })} tone="danger" disabled={props.value.options.length <= 2} onClick={() => removeOption(i)} />
                   </div>
                 )}
               </Index>
             </div>
             <Show when={props.value.options.length < maxOptions()}>
-              <Button class="mt-2" size="sm" variant="ghost" icon="plus" onClick={addOption}>Add pair</Button>
+              <Button class="mt-2" size="sm" variant="ghost" icon="plus" onClick={addOption}>{t('Add pair')}</Button>
             </Show>
           </fieldset>
         </Match>
 
         <Match when={props.value.type === 'Ordering'}>
           <fieldset>
-            <legend class="mb-2 text-sm font-medium text-slate-700">Items in the correct order (scrambled when printed)</legend>
+            <legend class="mb-2 text-sm font-medium text-slate-700">{t('Items in the correct order (scrambled when printed)')}</legend>
             <div class="space-y-2">
               <Index each={props.value.options}>
                 {(item, i) => (
                   <div class="flex items-center gap-2">
                     <span class="w-5 text-sm font-semibold text-slate-500">{i + 1}.</span>
                     <input class="h-9 min-w-0 flex-1 rounded-md border border-slate-300 px-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
-                      value={item().text} placeholder={`Step ${i + 1}`} aria-label={`Item ${i + 1}`} onInput={(e) => patchOption(i, { text: e.currentTarget.value })} />
-                    <IconButton icon="up" label="Move up" disabled={i === 0} onClick={() => move(i, -1)} />
-                    <IconButton icon="down" label="Move down" disabled={i === props.value.options.length - 1} onClick={() => move(i, 1)} />
-                    <IconButton icon="trash" label={`Remove item ${i + 1}`} tone="danger" disabled={props.value.options.length <= 2} onClick={() => removeOption(i)} />
+                      value={item().text} placeholder={t('Step {number}', { number: i + 1 })} aria-label={t('Item {number}', { number: i + 1 })} onInput={(e) => patchOption(i, { text: e.currentTarget.value })} />
+                    <IconButton icon="up" label={t('Move up')} disabled={i === 0} onClick={() => move(i, -1)} />
+                    <IconButton icon="down" label={t('Move down')} disabled={i === props.value.options.length - 1} onClick={() => move(i, 1)} />
+                    <IconButton icon="trash" label={t('Remove item {number}', { number: i + 1 })} tone="danger" disabled={props.value.options.length <= 2} onClick={() => removeOption(i)} />
                   </div>
                 )}
               </Index>
             </div>
             <Show when={props.value.options.length < maxOptions()}>
-              <Button class="mt-2" size="sm" variant="ghost" icon="plus" onClick={addOption}>Add item</Button>
+              <Button class="mt-2" size="sm" variant="ghost" icon="plus" onClick={addOption}>{t('Add item')}</Button>
             </Show>
           </fieldset>
         </Match>
 
         <Match when={props.value.type === 'ShortAnswer' || props.value.type === 'FillBlank'}>
           <TextInput
-            label={props.value.type === 'FillBlank' ? 'Correct answer(s) for the blank(s)' : 'Expected answer'}
+            label={props.value.type === 'FillBlank' ? t('Correct answer(s) for the blank(s)') : t('Expected answer')}
             required
             value={props.value.expectedAnswer ?? ''}
             onInput={(e) => props.update('expectedAnswer', e.currentTarget.value)}
@@ -206,12 +207,12 @@ export function QuestionContentEditor(props: {
 
         <Match when={props.value.type === 'Essay'}>
           <TextArea
-            label="Expected answer / marking rubric"
+            label={t('Expected answer / marking rubric')}
             rows={4}
             value={props.value.expectedAnswer ?? ''}
             onInput={(e) => props.update('expectedAnswer', e.currentTarget.value)}
             error={props.errors.expectedAnswer}
-            hint="Key points and how marks are allocated. Printed only on the answer key."
+            hint={t('Key points and how marks are allocated. Printed only on the answer key.')}
           />
         </Match>
       </Switch>
@@ -222,7 +223,7 @@ export function QuestionContentEditor(props: {
 
       <div class="grid gap-4 sm:grid-cols-4">
         <TextInput
-          label="Points"
+          label={t('Points')}
           type="number"
           min={0.25}
           step={0.25}
@@ -233,11 +234,11 @@ export function QuestionContentEditor(props: {
         />
         <TextArea
           class="sm:col-span-3"
-          label="Explanation"
+          label={t('Explanation')}
           rows={2}
           value={props.value.explanation ?? ''}
           onInput={(e) => props.update('explanation', e.currentTarget.value)}
-          hint="Why the answer is correct. Shown on the answer key only."
+          hint={t('Why the answer is correct. Shown on the answer key only.')}
           error={props.errors.explanation}
         />
       </div>
@@ -272,7 +273,7 @@ export function QuestionContentView(props: { value: QuestionContent; showAnswers
             <For each={props.value.options}>
               {(o, i) => (
                 <li class={props.showAnswers && o.isCorrect ? 'font-medium text-emerald-700' : 'text-slate-700'}>
-                  {letter(i())}. {o.text} {props.showAnswers && o.isCorrect ? '✓' : ''}
+                  {letter(i())}. {questionOptionLabel(props.value.type, o.text)} {props.showAnswers && o.isCorrect ? '✓' : ''}
                 </li>
               )}
             </For>
@@ -281,7 +282,7 @@ export function QuestionContentView(props: { value: QuestionContent; showAnswers
       </Switch>
       <Show when={props.showAnswers && props.value.expectedAnswer}>
         <p class="rounded-md bg-emerald-50 px-2 py-1 text-emerald-800">
-          <span class="font-medium">{props.value.type === 'Essay' ? 'Rubric: ' : 'Answer: '}</span>
+          <span class="font-medium">{t(props.value.type === 'Essay' ? 'Rubric:' : 'Answer:')}{' '}</span>
           {props.value.expectedAnswer}
         </p>
       </Show>

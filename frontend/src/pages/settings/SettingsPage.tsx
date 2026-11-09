@@ -11,7 +11,7 @@ import { usersApi } from '~/services/auth.api'
 import { auth } from '~/stores/auth.store'
 import type { RoleName } from '~/types/models'
 import { formatDateTime } from '~/utils/format'
-import { locale, setLocale } from '~/utils/i18n'
+import { locale, setLocale, t } from '~/utils/i18n'
 
 function UserManagement() {
   const [users, { refetch }] = createResource(() => usersApi.list())
@@ -27,13 +27,13 @@ function UserManagement() {
     try {
       const f = form()
       await usersApi.create({ fullName: f.fullName, email: f.email, password: f.password, roles: [f.role] })
-      toast.success('User created')
+      toast.success(t('User created'))
       setOpen(false)
       refetch()
     } catch (err) {
       const fe = getFieldErrors(err)
       setErrors(fe)
-      if (!Object.keys(fe).length) toast.error('Could not create user', getErrorMessage(err))
+      if (!Object.keys(fe).length) toast.error(t('Could not create user'), getErrorMessage(err))
     } finally {
       setSaving(false)
     }
@@ -42,21 +42,21 @@ function UserManagement() {
   const toggleActive = async (id: string, isActive: boolean) => {
     try {
       await usersApi.setActive(id, isActive)
-      toast.success(isActive ? 'User activated' : 'User deactivated')
+      toast.success(isActive ? t('User activated') : t('User deactivated'))
       refetch()
     } catch (err) {
-      toast.error('Could not update user', getErrorMessage(err))
+      toast.error(t('Could not update user'), getErrorMessage(err))
     }
   }
 
   return (
     <Card class="mt-6">
       <CardHeader
-        title="Users"
-        description="Create teacher and administrator accounts."
+        title={t('Users')}
+        description={t('Create teacher and administrator accounts.')}
         actions={
           <Button size="sm" icon="plus" onClick={() => { setForm({ fullName: '', email: '', password: '', role: 'Teacher' }); setErrors({}); setOpen(true) }}>
-            New user
+            {t('New user')}
           </Button>
         }
       />
@@ -69,18 +69,18 @@ function UserManagement() {
               rows={list()}
               rowKey={(u) => u.id}
               columns={[
-                { header: 'Name', cell: (u) => <span class="font-medium text-slate-900">{u.fullName}</span> },
-                { header: 'Email', cell: (u) => u.email },
-                { header: 'Roles', cell: (u) => <div class="flex gap-1">{u.roles.map((r) => <Badge tone={r === 'Admin' ? 'violet' : 'blue'}>{r}</Badge>)}</div> },
-                { header: 'Last login', cell: (u) => <span class="text-slate-500">{formatDateTime(u.lastLoginAt)}</span> },
-                { header: 'Status', cell: (u) => <Badge tone={u.isActive ? 'green' : 'gray'}>{u.isActive ? 'Active' : 'Inactive'}</Badge> },
+                { get header() { return t('Name') }, cell: (u) => <span class="font-medium text-slate-900">{u.fullName}</span> },
+                { get header() { return t('Email') }, cell: (u) => u.email },
+                { get header() { return t('Roles') }, cell: (u) => <div class="flex gap-1">{u.roles.map((r) => <Badge tone={r === 'Admin' ? 'violet' : 'blue'}>{t(r)}</Badge>)}</div> },
+                { get header() { return t('Last login') }, cell: (u) => <span class="text-slate-500">{formatDateTime(u.lastLoginAt)}</span> },
+                { get header() { return t('Status') }, cell: (u) => <Badge tone={u.isActive ? 'green' : 'gray'}>{u.isActive ? t('Active') : t('Inactive')}</Badge> },
                 {
                   header: '',
                   class: 'text-end',
                   cell: (u) => (
                     <Show when={u.id !== auth.state.user?.id}>
                       <Button size="sm" variant="ghost" onClick={() => toggleActive(u.id, !u.isActive)}>
-                        {u.isActive ? 'Deactivate' : 'Activate'}
+                        {u.isActive ? t('Deactivate') : t('Activate')}
                       </Button>
                     </Show>
                   ),
@@ -94,30 +94,30 @@ function UserManagement() {
       <Modal
         open={open()}
         onOpenChange={setOpen}
-        title="New user"
+        title={t('New user')}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" form="user-form" loading={saving()}>Create user</Button>
+            <Button variant="secondary" onClick={() => setOpen(false)}>{t('Cancel')}</Button>
+            <Button type="submit" form="user-form" loading={saving()}>{t('Create user')}</Button>
           </>
         }
       >
         <form id="user-form" class="space-y-4" onSubmit={create}>
-          <TextInput label="Full name" required value={form().fullName} onInput={(e) => setForm({ ...form(), fullName: e.currentTarget.value })} error={errors().fullName} />
-          <TextInput label="Email" type="email" required value={form().email} onInput={(e) => setForm({ ...form(), email: e.currentTarget.value })} error={errors().email} />
+          <TextInput label={t('Full name')} required value={form().fullName} onInput={(e) => setForm({ ...form(), fullName: e.currentTarget.value })} error={errors().fullName} />
+          <TextInput label={t('Email')} type="email" required value={form().email} onInput={(e) => setForm({ ...form(), email: e.currentTarget.value })} error={errors().email} />
           <TextInput
-            label="Initial password"
+            label={t('Initial password')}
             type="password"
             autocomplete="new-password"
             required
             value={form().password}
             onInput={(e) => setForm({ ...form(), password: e.currentTarget.value })}
             error={errors().password}
-            hint="At least 8 characters with upper-case, lower-case and a digit."
+            hint={t('At least 8 characters with upper-case, lower-case and a digit.')}
           />
           <SelectInput
-            label="Role"
-            options={[{ value: 'Teacher', label: 'Teacher' }, { value: 'Admin', label: 'Administrator' }]}
+            label={t('Role')}
+            options={[{ value: 'Teacher', get label() { return t('Teacher') } }, { value: 'Admin', get label() { return t('Administrator') } }]}
             value={form().role}
             onChange={(v) => setForm({ ...form(), role: v as RoleName })}
             error={errors().roles}
@@ -131,25 +131,25 @@ function UserManagement() {
 export default function SettingsPage() {
   return (
     <>
-      <PageHeader title="Settings" description="Your profile and preferences." />
+      <PageHeader title={t('Settings')} description={t('Your profile and preferences.')} />
       <div class="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader title="Profile" />
+          <CardHeader title={t('Profile')} />
           <dl class="grid gap-4 p-5 text-sm sm:grid-cols-2">
-            <div><dt class="text-slate-500">Name</dt><dd class="font-medium text-slate-900">{auth.state.user?.fullName}</dd></div>
-            <div><dt class="text-slate-500">Email</dt><dd class="font-medium text-slate-900">{auth.state.user?.email}</dd></div>
-            <div><dt class="text-slate-500">Roles</dt><dd class="font-medium text-slate-900">{auth.state.user?.roles.join(', ')}</dd></div>
+            <div><dt class="text-slate-500">{t('Name')}</dt><dd class="font-medium text-slate-900">{auth.state.user?.fullName}</dd></div>
+            <div><dt class="text-slate-500">{t('Email')}</dt><dd class="font-medium text-slate-900">{auth.state.user?.email}</dd></div>
+            <div><dt class="text-slate-500">{t('Roles')}</dt><dd class="font-medium text-slate-900">{auth.state.user?.roles.map((role) => t(role)).join(locale() === 'ar' ? '، ' : ', ')}</dd></div>
           </dl>
         </Card>
         <Card>
-          <CardHeader title="Language & direction" />
+          <CardHeader title={t('Language & direction')} />
           <div class="p-5">
             <SelectInput
-              label="Interface language"
-              options={[{ value: 'en', label: 'English (LTR)' }, { value: 'ar', label: 'العربية (RTL)' }]}
+              label={t('Interface language')}
+              options={[{ value: 'en', get label() { return t('English (LTR)') } }, { value: 'ar', get label() { return t('العربية (RTL)') } }]}
               value={locale()}
               onChange={(v) => setLocale(v as 'en' | 'ar')}
-              hint="Arabic switches the layout to right-to-left."
+              hint={t('Arabic switches the layout to right-to-left.')}
             />
           </div>
         </Card>

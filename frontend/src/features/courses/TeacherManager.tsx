@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { createResource, createSignal, For, Show } from 'solid-js'
 import { toast } from '~/components/feedback/toast'
 import { SelectInput } from '~/components/forms/Fields'
@@ -22,11 +23,11 @@ export function TeacherManager(props: { courseId: string; teachers: CourseTeache
     setBusy(true)
     try {
       await coursesApi.assignTeacher(props.courseId, selected())
-      toast.success('Teacher assigned')
+      toast.success(t('Teacher assigned'))
       setSelected('')
       props.onChanged()
     } catch (err) {
-      toast.error('Could not assign teacher', getErrorMessage(err))
+      toast.error(t('Could not assign teacher'), getErrorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -35,18 +36,18 @@ export function TeacherManager(props: { courseId: string; teachers: CourseTeache
   const remove = async (teacher: CourseTeacher) => {
     try {
       await coursesApi.removeTeacher(props.courseId, teacher.id)
-      toast.success(`${teacher.fullName} removed from course`)
+      toast.success(t('{name} removed from subject', { name: teacher.fullName }))
       props.onChanged()
     } catch (err) {
-      toast.error('Could not remove teacher', getErrorMessage(err))
+      toast.error(t('Could not remove teacher'), getErrorMessage(err))
     }
   }
 
   return (
     <Card>
-      <CardHeader title="Teachers" />
+      <CardHeader title={t('Teachers')} />
       <ul class="divide-y divide-slate-100">
-        <For each={props.teachers} fallback={<li class="px-5 py-4 text-sm text-slate-500">No teachers assigned.</li>}>
+        <For each={props.teachers} fallback={<li class="px-5 py-4 text-sm text-slate-500">{t('No teachers assigned.')}</li>}>
           {(teacher) => (
             <li class="flex items-center gap-3 px-5 py-3">
               <div class="min-w-0 flex-1">
@@ -54,7 +55,7 @@ export function TeacherManager(props: { courseId: string; teachers: CourseTeache
                 <p class="truncate text-xs text-slate-500">{teacher.email}</p>
               </div>
               <Show when={auth.isAdmin()}>
-                <IconButton icon="x" label={`Remove ${teacher.fullName}`} tone="danger" onClick={() => remove(teacher)} />
+                <IconButton icon="x" label={t('Remove {name}', { name: teacher.fullName })} tone="danger" onClick={() => remove(teacher)} />
               </Show>
             </li>
           )}
@@ -64,13 +65,13 @@ export function TeacherManager(props: { courseId: string; teachers: CourseTeache
         <div class="flex items-end gap-2 border-t border-slate-100 px-5 py-4">
           <SelectInput
             class="flex-1"
-            label="Assign teacher"
-            placeholder={available().length ? 'Select a teacher' : 'No available teachers'}
+            label={t('Assign teacher')}
+            placeholder={available().length ? t('Select a teacher') : t('No available teachers')}
             options={available().map((t) => ({ value: t.id, label: t.fullName }))}
             value={selected()}
             onChange={setSelected}
           />
-          <Button onClick={assign} loading={busy()} disabled={!selected()}>Assign</Button>
+          <Button onClick={assign} loading={busy()} disabled={!selected()}>{t('Assign')}</Button>
         </div>
       </Show>
     </Card>

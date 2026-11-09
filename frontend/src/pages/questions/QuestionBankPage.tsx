@@ -1,3 +1,4 @@
+import { t, translateMessage } from '~/utils/i18n'
 import { A, useNavigate, useParams } from '@solidjs/router'
 import { createEffect, createResource, createSignal, Match, on, Show, Switch } from 'solid-js'
 import { createStore } from 'solid-js/store'
@@ -36,28 +37,28 @@ export default function QuestionBankPage() {
   const duplicate = async (q: QuestionListItem) => {
     try {
       const copy = await questionsApi.duplicate(q.id)
-      toast.success('Question duplicated')
+      toast.success(t('Question duplicated'))
       navigate(`/questions/${copy.id}/edit`)
     } catch (err) {
-      toast.error('Could not duplicate question', getErrorMessage(err))
+      toast.error(t('Could not duplicate question'), getErrorMessage(err))
     }
   }
 
   const archiveOrDelete = (q: QuestionListItem) =>
     confirm.ask({
-      title: q.usageCount > 0 ? 'Archive this question?' : 'Delete this question?',
+      title: q.usageCount > 0 ? t('Archive this question?') : t('Delete this question?'),
       description:
         q.usageCount > 0
-          ? 'The question is used in exams, so it will be archived (kept for exam history) instead of deleted.'
-          : 'The question is not used in any exam and will be permanently deleted.',
-      confirmLabel: q.usageCount > 0 ? 'Archive' : 'Delete',
+          ? t('The question is used in exams, so it will be archived (kept for exam history) instead of deleted.')
+          : t('The question is not used in any exam and will be permanently deleted.'),
+      confirmLabel: q.usageCount > 0 ? t('Archive') : t('Delete'),
       onConfirm: async () => {
         try {
           const response = await questionsApi.remove(q.id)
-          toast.success(response.data.archived ? 'Question archived' : 'Question deleted', response.message)
+          toast.success(response.data.archived ? t('Question archived') : t('Question deleted'), response.message && translateMessage(response.message))
           refetch()
         } catch (err) {
-          toast.error('Action failed', getErrorMessage(err))
+          toast.error(t('Action failed'), getErrorMessage(err))
         }
       },
     })
@@ -65,10 +66,10 @@ export default function QuestionBankPage() {
   const restore = async (q: QuestionListItem) => {
     try {
       await questionsApi.setStatus(q.id, 'Draft')
-      toast.success('Question restored as draft')
+      toast.success(t('Question restored as draft'))
       refetch()
     } catch (err) {
-      toast.error('Could not restore question', getErrorMessage(err))
+      toast.error(t('Could not restore question'), getErrorMessage(err))
     }
   }
 
@@ -79,17 +80,17 @@ export default function QuestionBankPage() {
       <PageHeader
         breadcrumb={
           <Show when={params.id}>
-            <A href={`/courses/${params.id}`} class="hover:text-slate-700">{course()?.code ?? 'Course'}</A>
+            <A href={`/courses/${params.id}`} class="hover:text-slate-700">{course()?.code ?? t('Subject')}</A>
           </Show>
         }
-        title={params.id && course() ? `${course()!.code} · Question Bank` : 'Question Bank'}
-        description="Search, filter and manage reusable questions."
+        title={params.id && course() ? t('{code} · Question Bank', { code: course()!.code }) : t('Question Bank')}
+        description={t('Search, filter and manage reusable questions.')}
         actions={
           <>
             <Button variant="ai" icon="sparkles" onClick={() => navigate(params.id ? `/ai/generate?courseId=${params.id}` : '/ai/generate')}>
-              Generate with AI
+              {t('Generate with AI')}
             </Button>
-            <Button icon="plus" onClick={() => navigate(newQuestionHref())}>New question</Button>
+            <Button icon="plus" onClick={() => navigate(newQuestionHref())}>{t('New question')}</Button>
           </>
         }
       />
@@ -106,9 +107,9 @@ export default function QuestionBankPage() {
           <Match when={result.latest?.items.length === 0}>
             <EmptyState
               icon="questions"
-              title="No questions found"
-              description="Try different filters, create a question, or generate drafts with AI."
-              action={<Button size="sm" icon="plus" onClick={() => navigate(newQuestionHref())}>New question</Button>}
+              title={t('No questions found')}
+              description={t('Try different filters, create a question, or generate drafts with AI.')}
+              action={<Button size="sm" icon="plus" onClick={() => navigate(newQuestionHref())}>{t('New question')}</Button>}
             />
           </Match>
           <Match when={result.latest}>
@@ -119,7 +120,7 @@ export default function QuestionBankPage() {
                   rowKey={(q) => q.id}
                   columns={[
                     {
-                      header: 'Question',
+                      get header() { return t('Question') },
                       class: 'max-w-xl',
                       cell: (q) => (
                         <button type="button" class="text-start" onClick={() => setPreviewId(q.id)}>
@@ -132,12 +133,12 @@ export default function QuestionBankPage() {
                         </button>
                       ),
                     },
-                    { header: 'Type', cell: (q) => <QuestionTypeBadge value={q.type} /> },
-                    { header: 'Difficulty', cell: (q) => <DifficultyBadge value={q.difficulty} /> },
-                    { header: 'Bloom', cell: (q) => <span class="text-slate-600">{q.bloomLevel}</span> },
-                    { header: 'Points', cell: (q) => <span class="whitespace-nowrap tabular-nums">{formatPoints(q.points)}</span> },
+                    { get header() { return t('Type') }, cell: (q) => <QuestionTypeBadge value={q.type} /> },
+                    { get header() { return t('Difficulty') }, cell: (q) => <DifficultyBadge value={q.difficulty} /> },
+                    { get header() { return t('Bloom') }, cell: (q) => <span class="text-slate-600">{t(q.bloomLevel)}</span> },
+                    { get header() { return t('Points') }, cell: (q) => <span class="whitespace-nowrap tabular-nums">{formatPoints(q.points)}</span> },
                     {
-                      header: 'Status',
+                      get header() { return t('Status') },
                       cell: (q) => (
                         <div class="flex flex-wrap gap-1">
                           <QuestionStatusBadge value={q.status} />
@@ -145,20 +146,20 @@ export default function QuestionBankPage() {
                         </div>
                       ),
                     },
-                    { header: 'Used', cell: (q) => <span class="tabular-nums text-slate-600">{q.usageCount}</span> },
+                    { get header() { return t('Used') }, cell: (q) => <span class="tabular-nums text-slate-600">{q.usageCount}</span> },
                     {
                       header: '',
                       class: 'text-end',
                       cell: (q) => (
                         <div class="flex justify-end gap-0.5">
-                          <IconButton icon="eye" label="Preview" onClick={() => setPreviewId(q.id)} />
-                          <IconButton icon="edit" label="Edit" onClick={() => navigate(`/questions/${q.id}/edit`)} />
-                          <IconButton icon="copy" label="Duplicate" onClick={() => duplicate(q)} />
+                          <IconButton icon="eye" label={t('Preview')} onClick={() => setPreviewId(q.id)} />
+                          <IconButton icon="edit" label={t('Edit')} onClick={() => navigate(`/questions/${q.id}/edit`)} />
+                          <IconButton icon="copy" label={t('Duplicate')} onClick={() => duplicate(q)} />
                           <Show
                             when={q.status !== 'Archived'}
-                            fallback={<IconButton icon="refresh" label="Restore" onClick={() => restore(q)} />}
+                            fallback={<IconButton icon="refresh" label={t('Restore')} onClick={() => restore(q)} />}
                           >
-                            <IconButton icon={q.usageCount > 0 ? 'archive' : 'trash'} label={q.usageCount > 0 ? 'Archive' : 'Delete'} tone="danger" onClick={() => archiveOrDelete(q)} />
+                            <IconButton icon={q.usageCount > 0 ? 'archive' : 'trash'} label={q.usageCount > 0 ? t('Archive') : t('Delete')} tone="danger" onClick={() => archiveOrDelete(q)} />
                           </Show>
                         </div>
                       ),

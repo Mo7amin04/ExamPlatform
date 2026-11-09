@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { createResource, For, Match, Show, Switch } from 'solid-js'
 import { ErrorState, LoadingState } from '~/components/feedback/States'
 import { Modal } from '~/components/ui/Dialog'
@@ -10,7 +11,7 @@ export function QuestionPreviewDialog(props: { questionId: string | null; onClos
   const [question, { refetch }] = createResource(() => props.questionId, questionsApi.get)
 
   return (
-    <Modal open={!!props.questionId} onOpenChange={(open) => !open && props.onClose()} title="Question preview" size="lg">
+    <Modal open={!!props.questionId} onOpenChange={(open) => !open && props.onClose()} title={t('Question preview')} size="lg">
       <Switch>
         <Match when={question.error}>
           <ErrorState error={question.error} onRetry={refetch} />
@@ -30,10 +31,10 @@ export function QuestionPreviewDialog(props: { questionId: string | null; onClos
               </div>
               <QuestionContentView value={q()} showAnswers />
               <dl class="grid grid-cols-2 gap-3 border-t border-slate-100 pt-4 text-sm sm:grid-cols-4">
-                <div><dt class="text-xs text-slate-500">Course</dt><dd class="font-medium">{q().courseCode}</dd></div>
-                <div><dt class="text-xs text-slate-500">Topic</dt><dd class="font-medium">{q().topicName ?? '—'}</dd></div>
-                <div><dt class="text-xs text-slate-500">Bloom level</dt><dd class="font-medium">{q().bloomLevel}</dd></div>
-                <div><dt class="text-xs text-slate-500">Used in exams</dt><dd class="font-medium">{q().usageCount}</dd></div>
+                <div><dt class="text-xs text-slate-500">{t('Subject')}</dt><dd class="font-medium">{q().courseCode}</dd></div>
+                <div><dt class="text-xs text-slate-500">{t('Topic')}</dt><dd class="font-medium">{q().topicName ?? '—'}</dd></div>
+                <div><dt class="text-xs text-slate-500">{t('Bloom level')}</dt><dd class="font-medium">{t(q().bloomLevel)}</dd></div>
+                <div><dt class="text-xs text-slate-500">{t('Used in exams')}</dt><dd class="font-medium">{q().usageCount}</dd></div>
               </dl>
               <Show when={q().tags.length}>
                 <div class="flex flex-wrap gap-1.5">

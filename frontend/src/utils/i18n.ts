@@ -1,23 +1,26 @@
 import { createRoot, createSignal } from 'solid-js'
+import { uiMessages } from './uiMessages'
 
 /**
- * Minimal i18n + direction handling. The shell (navigation, auth, common actions) is translated;
- * layouts use logical CSS properties (ms-/me-/start-/end-) so switching to Arabic flips the UI to RTL.
+ * Shared interface language and document direction. The selected locale is saved across visits.
  */
 export type Locale = 'en' | 'ar'
 
 const dictionaries = {
   en: {
     'app.name': 'Exam Platform',
-    'app.tagline': 'Exam management for university teachers',
+    'app.tagline': 'Exam management for school teachers',
     'nav.dashboard': 'Dashboard',
-    'nav.departments': 'Departments',
-    'nav.courses': 'Courses',
+    'nav.gradeLevels': 'Grade Levels',
+    'nav.courses': 'Subjects',
     'nav.questions': 'Question Bank',
     'nav.exams': 'Exams',
     'nav.ai': 'AI Generator',
     'nav.settings': 'Settings',
     'nav.signOut': 'Sign out',
+    'nav.open': 'Open navigation',
+    'auth.heroTitle': 'Build better exams, faster.',
+    'auth.heroDescription': 'Manage subjects, organize your question bank, and turn your ideas into print-ready exams.',
     'auth.title': 'Sign in to your account',
     'auth.email': 'Email',
     'auth.password': 'Password',
@@ -29,15 +32,18 @@ const dictionaries = {
   },
   ar: {
     'app.name': 'منصة الاختبارات',
-    'app.tagline': 'إدارة الاختبارات لأعضاء هيئة التدريس',
+    'app.tagline': 'إدارة الاختبارات لمعلّمي المدارس',
     'nav.dashboard': 'لوحة التحكم',
-    'nav.departments': 'الأقسام',
-    'nav.courses': 'المقررات',
+    'nav.gradeLevels': 'الصفوف الدراسية',
+    'nav.courses': 'المواد الدراسية',
     'nav.questions': 'بنك الأسئلة',
     'nav.exams': 'الاختبارات',
     'nav.ai': 'مولد الأسئلة الذكي',
     'nav.settings': 'الإعدادات',
     'nav.signOut': 'تسجيل الخروج',
+    'nav.open': 'فتح قائمة التنقل',
+    'auth.heroTitle': 'صمّم اختبارات أفضل في وقت أقل.',
+    'auth.heroDescription': 'أدر المواد الدراسية ونظّم بنك الأسئلة وحوّل أفكارك إلى اختبارات جاهزة للطباعة.',
     'auth.title': 'تسجيل الدخول إلى حسابك',
     'auth.email': 'البريد الإلكتروني',
     'auth.password': 'كلمة المرور',
@@ -49,7 +55,24 @@ const dictionaries = {
   },
 } as const
 
-export type TranslationKey = keyof (typeof dictionaries)['en']
+export type TranslationKey = keyof (typeof dictionaries)['en'] | keyof typeof uiMessages
+
+const schoolMessages: ReadonlyMap<string, TranslationKey> = new Map([
+  ['Remove all questions before moving the exam to another course.', 'Remove all questions before moving the exam to another subject.'],
+  ['The course has questions or exams and cannot be deleted.', 'The subject has questions or exams and cannot be deleted.'],
+  ['The department still has courses. Move or delete them first.', 'Move or delete the subjects in this grade level before deleting it.'],
+  ['The selected department does not exist.', 'The selected grade level does not exist.'],
+  ['A school year with this code already exists.', 'A grade level with this code already exists.'],
+  ['The question is used in exams and cannot be moved to another course.', 'The question is used in exams and cannot be moved to another subject.'],
+  ['The teacher is already assigned to this course.', 'The teacher is already assigned to this subject.'],
+  ['The teacher is not assigned to this course.', 'The teacher is not assigned to this subject.'],
+  ['The topic does not belong to the selected course.', 'The topic does not belong to the selected subject.'],
+  ['You are not assigned to this course.', 'You are not assigned to this subject.'],
+])
+
+function isUiMessage(key: string): key is keyof typeof uiMessages {
+  return Object.prototype.hasOwnProperty.call(uiMessages, key)
+}
 
 const STORAGE_KEY = 'exam-platform.locale'
 
@@ -67,6 +90,7 @@ const i18n = createRoot(() => {
   const apply = (value: Locale) => {
     document.documentElement.lang = value
     document.documentElement.dir = value === 'ar' ? 'rtl' : 'ltr'
+    document.title = dictionaries[value]['app.name']
   }
   apply(locale())
 
@@ -80,9 +104,18 @@ const i18n = createRoot(() => {
     }
   }
 
-  const t = (key: TranslationKey) => dictionaries[locale()][key] ?? dictionaries.en[key]
+  const t = (key: TranslationKey, values?: Record<string, string | number>) => {
+    const language = locale()
+    const message = isUiMessage(key) ? (language === 'ar' ? uiMessages[key] : key) : dictionaries[language][key] ?? key
+    return values ? message.replace(/\{(\w+)\}/g, (match, name: string) => String(values[name] ?? match)) : message
+  }
 
-  return { locale, setLocale, t }
+  const translateMessage = (message: string) => {
+    const key = schoolMessages.get(message) ?? message
+    return isUiMessage(key) ? t(key) : message
+  }
+
+  return { locale, setLocale, t, translateMessage }
 })
 
-export const { locale, setLocale, t } = i18n
+export const { locale, setLocale, t, translateMessage } = i18n

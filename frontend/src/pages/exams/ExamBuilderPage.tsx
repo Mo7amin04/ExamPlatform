@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { A, useNavigate, useParams } from '@solidjs/router'
 import { createEffect, createResource, createSignal, Match, on, Show, Switch } from 'solid-js'
 import { createStore } from 'solid-js/store'
@@ -63,7 +64,7 @@ export default function ExamBuilderPage() {
       if (success) toast.success(success)
       return true
     } catch (err) {
-      toast.error('Action failed', getErrorMessage(err))
+      toast.error(t('Action failed'), getErrorMessage(err))
       refetch()
       return false
     } finally {
@@ -80,11 +81,11 @@ export default function ExamBuilderPage() {
       const updated = await examsApi.update(params.id, { ...settings })
       mutate(updated)
       setDirty(false)
-      toast.success('Draft saved')
+      toast.success(t('Draft saved'))
       return true
     } catch (err) {
       setErrors(getFieldErrors(err))
-      toast.error('Could not save exam', getErrorMessage(err))
+      toast.error(t('Could not save exam'), getErrorMessage(err))
       return false
     } finally {
       setSaving(false)
@@ -102,45 +103,45 @@ export default function ExamBuilderPage() {
 
   const removeQuestion = (q: ExamQuestion) =>
     confirm.ask({
-      title: 'Remove question from exam?',
-      description: 'The question stays in the question bank; it is only removed from this exam.',
-      confirmLabel: 'Remove',
-      onConfirm: () => run('remove', () => examsApi.removeQuestion(params.id, q.questionId), 'Question removed'),
+      title: t('Remove question from exam?'),
+      description: t('The question stays in the question bank; it is only removed from this exam.'),
+      confirmLabel: t('Remove'),
+      onConfirm: () => run('remove', () => examsApi.removeQuestion(params.id, q.questionId), t('Question removed')),
     })
 
   const publish = () =>
     confirm.ask({
-      title: 'Publish this exam?',
-      description: 'A snapshot of the exam is recorded and the exam becomes read-only. You can move it back to draft later if changes are needed.',
-      confirmLabel: 'Publish',
+      title: t('Publish this exam?'),
+      description: t('A snapshot of the exam is recorded and the exam becomes read-only. You can move it back to draft later if changes are needed.'),
+      confirmLabel: t('Publish'),
       tone: 'primary',
       onConfirm: async () => {
         if (dirty() && !(await saveSettings())) return
-        await run('publish', () => examsApi.publish(params.id), 'Exam published')
+        await run('publish', () => examsApi.publish(params.id), t('Exam published'))
       },
     })
 
   const moveToDraft = () =>
     confirm.ask({
-      title: 'Move exam back to draft?',
-      description: 'The exam becomes editable again. Its published snapshot is kept in the version history.',
-      confirmLabel: 'Move to draft',
+      title: t('Move exam back to draft?'),
+      description: t('The exam becomes editable again. Its published snapshot is kept in the version history.'),
+      confirmLabel: t('Move to draft'),
       tone: 'primary',
-      onConfirm: () => run('draft', () => examsApi.moveToDraft(params.id), 'Exam moved back to draft'),
+      onConfirm: () => run('draft', () => examsApi.moveToDraft(params.id), t('Exam moved back to draft')),
     })
 
   const remove = () =>
     confirm.ask({
-      title: 'Delete this exam?',
-      description: 'Never-published exams are deleted permanently. Exams with published history are archived instead.',
-      confirmLabel: 'Delete',
+      title: t('Delete this exam?'),
+      description: t('Never-published exams are deleted permanently. Exams with published history are archived instead.'),
+      confirmLabel: t('Delete'),
       onConfirm: async () => {
         try {
           const response = await examsApi.remove(params.id)
-          toast.success(response.data.archived ? 'Exam archived' : 'Exam deleted')
+          toast.success(response.data.archived ? t('Exam archived') : t('Exam deleted'))
           navigate('/exams')
         } catch (err) {
-          toast.error('Could not delete exam', getErrorMessage(err))
+          toast.error(t('Could not delete exam'), getErrorMessage(err))
         }
       },
     })
@@ -165,20 +166,20 @@ export default function ExamBuilderPage() {
         {(e) => (
           <>
             <PageHeader
-              breadcrumb={<A href="/exams" class="hover:text-slate-700">Exams</A>}
+              breadcrumb={<A href="/exams" class="hover:text-slate-700">{t('Exams')}</A>}
               title={<span class="flex flex-wrap items-center gap-3">{e().title} <ExamStatusBadge value={e().status} /></span>}
-              description={`${e().courseCode} · ${e().type} · ${formatDuration(e().durationMinutes)}${e().versionCount ? ` · ${e().versionCount} published version(s)` : ''}`}
+              description={`${e().courseCode} · ${t(e().type)} · ${formatDuration(e().durationMinutes)}${e().versionCount ? ` · ${t('{count} published version(s)', { count: e().versionCount })}` : ''}`}
               actions={
                 <>
-                  <Button variant="secondary" icon="eye" onClick={() => goToPreview(`/exams/${e().id}/preview`)}>Preview</Button>
-                  <Button variant="secondary" icon="key" onClick={() => goToPreview(`/exams/${e().id}/answer-key`)}>Answer key</Button>
+                  <Button variant="secondary" icon="eye" onClick={() => goToPreview(`/exams/${e().id}/preview`)}>{t('Preview')}</Button>
+                  <Button variant="secondary" icon="key" onClick={() => goToPreview(`/exams/${e().id}/answer-key`)}>{t('Answer key')}</Button>
                   <ExportMenu examId={e().id} disabled={e().questions.length === 0} />
                   <Show when={editable()} fallback={
                     <Show when={e().status === 'Published'}>
-                      <Button variant="secondary" icon="edit" loading={busyAction() === 'draft'} onClick={moveToDraft}>Move to draft</Button>
+                      <Button variant="secondary" icon="edit" loading={busyAction() === 'draft'} onClick={moveToDraft}>{t('Move to draft')}</Button>
                     </Show>
                   }>
-                    <Button icon="check" loading={busyAction() === 'publish'} disabled={e().questions.length === 0} onClick={publish}>Publish</Button>
+                    <Button icon="check" loading={busyAction() === 'publish'} disabled={e().questions.length === 0} onClick={publish}>{t('Publish')}</Button>
                   </Show>
                 </>
               }
@@ -186,18 +187,18 @@ export default function ExamBuilderPage() {
 
             <Show when={e().status === 'Published'}>
               <div class="mb-6">
-                <InlineAlert tone="success" title="This exam is published">
-                  Published exams are read-only to preserve what students received. Use "Move to draft" to make changes.
+                <InlineAlert tone="success" title={t('This exam is published')}>
+                  {t('Published exams are read-only to preserve what students received. Use "Move to draft" to make changes.')}
                 </InlineAlert>
               </div>
             </Show>
             <Show when={e().status === 'Archived'}>
-              <div class="mb-6"><InlineAlert tone="warning" title="This exam is archived">Archived exams are kept for records and cannot be edited.</InlineAlert></div>
+              <div class="mb-6"><InlineAlert tone="warning" title={t('This exam is archived')}>{t('Archived exams are kept for records and cannot be edited.')}</InlineAlert></div>
             </Show>
 
             <div class="grid gap-6 xl:grid-cols-[minmax(0,24rem)_1fr]">
               <Card class="self-start">
-                <CardHeader title="Exam settings" />
+                <CardHeader title={t('Exam settings')} />
                 <div class="p-5">
                   <ExamSettingsFields
                     value={settings}
@@ -211,19 +212,19 @@ export default function ExamBuilderPage() {
                   />
                   <Show when={editable()}>
                     <div class="mt-5 flex flex-wrap gap-2">
-                      <Button onClick={saveSettings} loading={saving()} disabled={!dirty()}>Save draft</Button>
+                      <Button onClick={saveSettings} loading={saving()} disabled={!dirty()}>{t('Save draft')}</Button>
                       <Show when={e().status === 'Draft'}>
                         <Button variant="secondary" loading={busyAction() === 'ready'} disabled={!e().questions.length}
-                          onClick={() => run('ready', () => examsApi.markReady(params.id), 'Exam marked as ready')}>
-                          Mark ready
+                          onClick={() => run('ready', () => examsApi.markReady(params.id), t('Exam marked as ready'))}>
+                          {t('Mark ready')}
                         </Button>
                       </Show>
                     </div>
-                    <Show when={dirty()}><p class="mt-2 text-xs text-amber-700">You have unsaved changes.</p></Show>
+                    <Show when={dirty()}><p class="mt-2 text-xs text-amber-700">{t('You have unsaved changes.')}</p></Show>
                   </Show>
                   <div class="mt-5 border-t border-slate-100 pt-4">
                     <Button variant="ghost" size="sm" icon="trash" class="text-red-600 hover:bg-red-50 hover:text-red-700" onClick={remove} disabled={e().status === 'Archived'}>
-                      Delete exam
+                      {t('Delete exam')}
                     </Button>
                   </div>
                 </div>
@@ -231,13 +232,13 @@ export default function ExamBuilderPage() {
 
               <Card class="self-start">
                 <CardHeader
-                  title={`Questions (${e().questions.length})`}
-                  description={<>Total: <strong class="text-slate-900">{e().totalPoints} points</strong> — calculated from the questions below.</>}
+                  title={t('Questions ({count})', { count: e().questions.length })}
+                  description={t('Total: {count} points — calculated from the questions below.', { count: e().totalPoints })}
                   actions={
                     <Show when={editable()}>
-                      <Button size="sm" icon="plus" onClick={() => setPickerOpen(true)}>Add question</Button>
+                      <Button size="sm" icon="plus" onClick={() => setPickerOpen(true)}>{t('Add question')}</Button>
                       <Button size="sm" variant="ai" icon="sparkles" onClick={() => navigate(`/ai/generate?courseId=${e().courseId}&examId=${e().id}`)}>
-                        Generate with AI
+                        {t('Generate with AI')}
                       </Button>
                     </Show>
                   }
@@ -248,9 +249,9 @@ export default function ExamBuilderPage() {
                     fallback={
                       <EmptyState
                         icon="questions"
-                        title="No questions yet"
-                        description="Add questions from the question bank or generate new ones with AI."
-                        action={<Show when={editable()}><Button size="sm" icon="plus" onClick={() => setPickerOpen(true)}>Add question</Button></Show>}
+                        title={t('No questions yet')}
+                        description={t('Add questions from the question bank or generate new ones with AI.')}
+                        action={<Show when={editable()}><Button size="sm" icon="plus" onClick={() => setPickerOpen(true)}>{t('Add question')}</Button></Show>}
                       />
                     }
                   >
@@ -263,7 +264,7 @@ export default function ExamBuilderPage() {
                       onOpen={setPreviewId}
                     />
                     <div class="mt-4 flex justify-end border-t border-slate-100 pt-3 text-sm">
-                      <span class="text-slate-600">Total points:&nbsp;</span>
+                      <span class="text-slate-600">{t('Total points:')}{' '}</span>
                       <strong class="tabular-nums text-slate-900">{e().totalPoints}</strong>
                     </div>
                   </Show>
@@ -277,7 +278,7 @@ export default function ExamBuilderPage() {
               courseId={e().courseId}
               onOpenChange={setPickerOpen}
               onAdd={async (ids) => {
-                await run('add', () => examsApi.addQuestions(params.id, ids), `${ids.length} question(s) added`)
+                await run('add', () => examsApi.addQuestions(params.id, ids), t('{count} question(s) added', { count: ids.length }))
               }}
             />
             <QuestionPreviewDialog questionId={previewId()} onClose={() => setPreviewId(null)} />

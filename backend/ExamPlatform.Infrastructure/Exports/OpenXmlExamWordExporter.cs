@@ -72,6 +72,7 @@ public sealed class OpenXmlExamWordExporter : IExamWordExporter
             var body = main.Document.Body!;
 
             AddDefaultStyles(main);
+            EmbedExamFonts(main);
             AppendHeader(body, header, isAnswerKey);
             writeContent(body);
 
@@ -96,18 +97,51 @@ public sealed class OpenXmlExamWordExporter : IExamWordExporter
         stylesPart.Styles = new Styles(
             new DocDefaults(
                 new RunPropertiesDefault(new RunPropertiesBaseStyle(
-                    new RunFonts { Ascii = "Calibri", HighAnsi = "Calibri", ComplexScript = "Arial" },
+                    new RunFonts { Ascii = ExamFonts.Family, HighAnsi = ExamFonts.Family, ComplexScript = ExamFonts.Family, EastAsia = ExamFonts.Family },
                     new FontSize { Val = "21" },
                     new FontSizeComplexScript { Val = "21" })),
                 new ParagraphPropertiesDefault(new ParagraphPropertiesBaseStyle(
                     new SpacingBetweenLines { After = "80", Line = "276", LineRule = LineSpacingRuleValues.Auto }))));
     }
 
+    private static void EmbedExamFonts(MainDocumentPart main)
+    {
+        main.AddNewPart<DocumentSettingsPart>().Settings = new Settings(new EmbedTrueTypeFonts());
+        var fontTable = main.AddNewPart<FontTablePart>();
+        fontTable.Fonts = new Fonts(new Font(
+            EmbedFont<EmbedRegularFont>(fontTable, ExamFonts.Regular),
+            EmbedFont<EmbedBoldFont>(fontTable, ExamFonts.Bold)) { Name = ExamFonts.Family });
+    }
+
+    private static T EmbedFont<T>(FontTablePart fontTable, string fileName) where T : FontRelationshipType, new()
+    {
+        using var font = ExamFonts.Open(fileName);
+        var data = new byte[font.Length];
+        font.ReadExactly(data);
+
+        // WordprocessingML masks the first 32 bytes with the GUID bytes in reverse display order.
+        var key = Guid.NewGuid();
+        var keyBytes = key.ToByteArray(bigEndian: true);
+        for (var i = 0; i < 32; i++)
+            data[i] ^= keyBytes[15 - i % 16];
+
+        var part = fontTable.AddFontPart(FontPartType.FontOdttf);
+        using var embedded = new MemoryStream(data, writable: false);
+        part.FeedData(embedded);
+        return new T { Id = fontTable.GetIdOfPart(part), FontKey = key.ToString("B").ToUpperInvariant() };
+    }
+
     private static void AppendHeader(Body body, ExamHeaderDto h, bool isAnswerKey)
     {
+        foreach (var line in h.LetterheadLines)
+        {
+            var paragraph = Para(line, size: 24, align: JustificationValues.Center, spacingAfter: 0, keepNext: true);
+            paragraph.GetFirstChild<Run>()!.RunProperties!.Append(new RightToLeftText());
+            body.Append(paragraph);
+        }
         body.Append(Para(h.UniversityName, bold: true, size: 30, align: JustificationValues.Center, spacingAfter: 0));
-        body.Append(Para(h.DepartmentName, size: 22, color: Muted, align: JustificationValues.Center, spacingAfter: 0));
-        body.Append(Para(CourseLine(h), size: 22, align: JustificationValues.Center, spacingAfter: 120));
+        body.Append(Para($"Grade level: {h.DepartmentName}", size: 22, color: Muted, align: JustificationValues.Center, spacingAfter: 0));
+        body.Append(Para(SubjectLine(h), size: 22, align: JustificationValues.Center, spacingAfter: 120));
         body.Append(Para(h.Title, bold: true, size: 34, align: JustificationValues.Center, spacingAfter: 0));
         body.Append(Para(isAnswerKey ? "ANSWER KEY — CONFIDENTIAL" : ExamTypeLabel(h.Type),
             bold: isAnswerKey, size: 20, color: isAnswerKey ? "B91C1C" : Muted, align: JustificationValues.Center, spacingAfter: 160));
@@ -137,7 +171,8 @@ public sealed class OpenXmlExamWordExporter : IExamWordExporter
     private static OpenXmlElement[] StudentFields() =>
     [
         Para("Student Name: ______________________________________________", spacingBefore: 120, spacingAfter: 160),
-        Para("Student ID: ____________________________        Signature: ____________________", spacingAfter: 240)
+        Para("Class section: ________________________        Student ID: ________________________", spacingAfter: 160),
+        Para("Signature: _________________________", spacingAfter: 240)
     ];
 
     private static void AppendQuestion(Body body, PreviewQuestionDto q)
@@ -247,8 +282,8 @@ public sealed class OpenXmlExamWordExporter : IExamWordExporter
     private static Run Run(string text, bool bold = false, bool italic = false, int? size = null, string? color = null)
     {
         var props = new RunProperties();
-        if (bold) props.Append(new Bold());
-        if (italic) props.Append(new Italic());
+        if (bold) props.Append(new Bold(), new BoldComplexScript());
+        if (italic) props.Append(new Italic(), new ItalicComplexScript());
         if (color is not null) props.Append(new Color { Val = color });
         if (size is { } s)
         {

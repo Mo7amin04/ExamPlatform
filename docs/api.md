@@ -118,7 +118,7 @@ points > 0; duration > 0; total points are always recalculated from exam questio
 | GET | `/api/exams/{id}/answer-key/pdf` | `application/pdf` |
 | GET | `/api/exams/{id}/answer-key/word` | `.docx` |
 
-`header` = university, department, course code/name, title, description, instructions, type, status, date,
+`header` = school name (`universityName`), grade level (`departmentName`), subject code/name, title, description, instructions, type, status, date,
 duration, total points, question count. Exported files include `Content-Disposition` with a safe file name.
 
 ## AI (Staff, 20 calls/min/user)

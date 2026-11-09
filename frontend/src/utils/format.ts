@@ -1,7 +1,9 @@
+import { locale, t } from './i18n'
+
 export function formatDate(value: string | null | undefined, options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }) {
   if (!value) return '—'
   const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat(undefined, options).format(date)
+  return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat(locale(), options).format(date)
 }
 
 export function formatDateTime(value: string | null | undefined) {
@@ -10,14 +12,14 @@ export function formatDateTime(value: string | null | undefined) {
 
 export function formatPoints(points: number) {
   const n = Number.isInteger(points) ? points.toString() : points.toFixed(2).replace(/\.?0+$/, '')
-  return `${n} ${points === 1 ? 'pt' : 'pts'}`
+  return t(points === 1 ? '{count} pt' : '{count} pts', { count: n })
 }
 
 export function formatDuration(minutes: number) {
-  if (minutes < 60) return `${minutes} min`
+  if (minutes < 60) return t('{count} min', { count: minutes })
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
-  return m ? `${h} h ${m} min` : `${h} h`
+  return m ? t('{hours} h {minutes} min', { hours: h, minutes: m }) : t('{count} h', { count: h })
 }
 
 export function truncate(text: string, max = 120) {

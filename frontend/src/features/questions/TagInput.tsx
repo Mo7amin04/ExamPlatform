@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { createSignal, For, Show } from 'solid-js'
 
 /** Chip-style tag editor: Enter or comma adds a tag, Backspace on empty input removes the last one. */
@@ -23,13 +24,13 @@ export function TagInput(props: { tags: string[]; onChange: (tags: string[]) => 
 
   return (
     <div>
-      <label for="tag-input" class="mb-1.5 block text-sm font-medium text-slate-700">Tags</label>
+      <label for="tag-input" class="mb-1.5 block text-sm font-medium text-slate-700">{t('Tags')}</label>
       <div class={`flex min-h-10 flex-wrap items-center gap-1.5 rounded-lg border bg-white px-2 py-1.5 shadow-sm focus-within:ring-2 ${props.error ? 'border-red-400 focus-within:ring-red-200' : 'border-slate-300 focus-within:border-brand-500 focus-within:ring-brand-100'}`}>
         <For each={props.tags}>
           {(tag) => (
             <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
               {tag}
-              <button type="button" class="text-slate-400 hover:text-slate-700" aria-label={`Remove tag ${tag}`} onClick={() => props.onChange(props.tags.filter((t) => t !== tag))}>
+              <button type="button" class="text-slate-400 hover:text-slate-700" aria-label={t('Remove tag {tag}', { tag })} onClick={() => props.onChange(props.tags.filter((t) => t !== tag))}>
                 ×
               </button>
             </span>
@@ -38,7 +39,7 @@ export function TagInput(props: { tags: string[]; onChange: (tags: string[]) => 
         <input
           id="tag-input"
           class="min-w-[6rem] flex-1 border-0 bg-transparent p-0.5 text-sm focus:outline-none"
-          placeholder={props.tags.length ? '' : 'Type and press Enter'}
+          placeholder={props.tags.length ? '' : t('Type and press Enter')}
           value={value()}
           onInput={(e) => setValue(e.currentTarget.value)}
           onKeyDown={onKeyDown}
@@ -48,7 +49,7 @@ export function TagInput(props: { tags: string[]; onChange: (tags: string[]) => 
           }}
         />
       </div>
-      <Show when={props.error} fallback={<p class="mt-1 text-xs text-slate-500">Up to {max()} tags.</p>}>
+      <Show when={props.error} fallback={<p class="mt-1 text-xs text-slate-500">{t('Up to {count} tags.', { count: max() })}</p>}>
         <p class="mt-1 text-xs font-medium text-red-600">{props.error}</p>
       </Show>
     </div>

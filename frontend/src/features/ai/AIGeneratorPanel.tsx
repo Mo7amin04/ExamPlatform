@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { useNavigate } from '@solidjs/router'
 import { createResource, createSignal, For, Match, Show, Switch } from 'solid-js'
 import { createStore, produce } from 'solid-js/store'
@@ -53,8 +54,8 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
 
   const generate = async () => {
     const clientErrors: Record<string, string> = {}
-    if (!request.courseId) clientErrors.courseId = 'Select a course.'
-    if (!(request.numberOfQuestions >= 1 && request.numberOfQuestions <= 20)) clientErrors.numberOfQuestions = 'Choose between 1 and 20 questions.'
+    if (!request.courseId) clientErrors.courseId = t('Select a subject.')
+    if (!(request.numberOfQuestions >= 1 && request.numberOfQuestions <= 20)) clientErrors.numberOfQuestions = t('Choose between 1 and 20 questions.')
     setErrors(clientErrors)
     if (Object.keys(clientErrors).length) return
 
@@ -70,7 +71,7 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
       })
       setItems(result.questions.map(toItem))
       setMeta({ generationId: result.generationId, provider: result.provider, model: result.model })
-      if (!result.questions.length) setGenerationError('The AI did not return any questions. Try adjusting your instructions.')
+      if (!result.questions.length) setGenerationError(t('The AI did not return any questions. Try adjusting your instructions.'))
     } catch (err) {
       setErrors(getFieldErrors(err))
       setGenerationError(getErrorMessage(err))
@@ -82,9 +83,9 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
   const regenerate = () => {
     if (!items.length) return void generate()
     confirm.ask({
-      title: 'Regenerate questions?',
-      description: 'The current proposals (including your edits) will be replaced by a new set.',
-      confirmLabel: 'Regenerate',
+      title: t('Regenerate questions?'),
+      description: t('The current proposals (including your edits) will be replaced by a new set.'),
+      confirmLabel: t('Regenerate'),
       tone: 'primary',
       onConfirm: generate,
     })
@@ -92,9 +93,9 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
 
   const discardAll = () =>
     confirm.ask({
-      title: 'Discard all generated questions?',
-      description: 'None of these questions have been saved. They will be removed from this page.',
-      confirmLabel: 'Discard all',
+      title: t('Discard all generated questions?'),
+      description: t('None of these questions have been saved. They will be removed from this page.'),
+      confirmLabel: t('Discard all'),
       onConfirm: () => {
         setItems([])
         setMeta(null)
@@ -127,14 +128,14 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
 
       if (props.examId) {
         await examsApi.addQuestions(props.examId, questionIds)
-        toast.success(`${questionIds.length} question(s) saved and added to the exam`)
+        toast.success(t('{count} question(s) saved and added to the exam', { count: questionIds.length }))
         navigate(`/exams/${props.examId}/edit`)
         return
       }
       setLastAccepted(questionIds.length)
-      toast.success(`${questionIds.length} question(s) added to the question bank`, 'They are saved as drafts for your review.')
+      toast.success(t('{count} question(s) added to the question bank', { count: questionIds.length }), t('They are saved as drafts for your review.'))
     } catch (err) {
-      toast.error('Could not accept questions', getErrorMessage(err))
+      toast.error(t('Could not accept questions'), getErrorMessage(err))
     } finally {
       setAccepting(false)
     }
@@ -172,7 +173,7 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
   return (
     <div class="grid gap-6 xl:grid-cols-[24rem_1fr]">
       <Card class="self-start">
-        <CardHeader title="Generation settings" description="AI proposals are never saved automatically." />
+        <CardHeader title={t('Generation settings')} description={t('AI proposals are never saved automatically.')} />
         <form
           class="space-y-4 p-5"
           onSubmit={(e) => {
@@ -181,9 +182,9 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
           }}
         >
           <SelectInput
-            label="Course"
+            label={t('Subject')}
             required
-            placeholder={courses.loading ? 'Loading…' : 'Select a course'}
+            placeholder={courses.loading ? t('Loading…') : t('Select a subject')}
             options={(courses() ?? []).map((c) => ({ value: c.id, label: `${c.code} — ${c.name}` }))}
             value={request.courseId}
             onChange={(v) => setRequest({ courseId: v, topicId: null })}
@@ -191,8 +192,8 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
             disabled={!!props.examId}
           />
           <SelectInput
-            label="Topic"
-            placeholder={request.courseId ? 'Whole course' : 'Select a course first'}
+            label={t('Topic')}
+            placeholder={request.courseId ? t('Whole subject') : t('Select a subject first')}
             options={(topics() ?? []).map((t) => ({ value: t.id, label: t.name }))}
             value={request.topicId ?? ''}
             onChange={(v) => setRequest('topicId', v || null)}
@@ -201,7 +202,7 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
           />
           <div class="grid grid-cols-2 gap-3">
             <TextInput
-              label="Number of questions"
+              label={t('Number of questions')}
               type="number"
               min={1}
               max={20}
@@ -209,24 +210,24 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
               onInput={(e) => setRequest('numberOfQuestions', Number(e.currentTarget.value))}
               error={errors().numberOfQuestions}
             />
-            <SelectInput label="Question type" options={questionTypeOptions} value={request.questionType}
+            <SelectInput label={t('Question type')} options={questionTypeOptions} value={request.questionType}
               onChange={(v) => setRequest('questionType', v as GenerateQuestionsRequest['questionType'])} />
-            <SelectInput label="Difficulty" options={difficultyOptions} value={request.difficulty}
+            <SelectInput label={t('Difficulty')} options={difficultyOptions} value={request.difficulty}
               onChange={(v) => setRequest('difficulty', v as GenerateQuestionsRequest['difficulty'])} />
-            <SelectInput label="Bloom level" options={bloomOptions} value={request.bloomLevel}
+            <SelectInput label={t('Bloom level')} options={bloomOptions} value={request.bloomLevel}
               onChange={(v) => setRequest('bloomLevel', v as GenerateQuestionsRequest['bloomLevel'])} />
           </div>
           <TextArea
-            label="Additional instructions"
+            label={t('Additional instructions')}
             rows={3}
-            placeholder="e.g. Focus on real-world scenarios; avoid 'all of the above'."
+            placeholder={t('e.g. Focus on real-world scenarios; avoid \'all of the above\'.')}
             value={request.additionalInstructions ?? ''}
             onInput={(e) => setRequest('additionalInstructions', e.currentTarget.value)}
             error={errors().additionalInstructions}
           />
           <MaterialUpload value={material()} onChange={setMaterial} />
           <Button type="submit" variant="ai" icon="sparkles" class="w-full" loading={generating()}>
-            {items.length ? 'Regenerate' : 'Generate questions'}
+            {items.length ? t('Regenerate') : t('Generate questions')}
           </Button>
         </form>
       </Card>
@@ -237,27 +238,27 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
             <Card>
               <div class="flex flex-col items-center justify-center gap-3 py-20 text-sm text-slate-600">
                 <Spinner class="size-6 text-violet-600" />
-                Generating questions… this can take up to a minute.
+                {t('Generating questions… this can take up to a minute.')}
               </div>
             </Card>
           </Match>
           <Match when={generationError() && !items.length}>
             <Card class="p-5">
-              <InlineAlert tone="error" title="Generation failed">{generationError()!}</InlineAlert>
-              <Button class="mt-4" variant="secondary" icon="refresh" onClick={generate}>Try again</Button>
+              <InlineAlert tone="error" title={t('Generation failed')}>{generationError()!}</InlineAlert>
+              <Button class="mt-4" variant="secondary" icon="refresh" onClick={generate}>{t('Try again')}</Button>
             </Card>
           </Match>
           <Match when={!items.length}>
             <Card>
               <Show
                 when={lastAccepted()}
-                fallback={<EmptyState icon="sparkles" title="No generated questions yet" description="Choose a course and settings, then generate. You will review every question before anything is saved." />}
+                fallback={<EmptyState icon="sparkles" title={t('No generated questions yet')} description={t('Choose a subject and settings, then generate. You will review every question before anything is saved.')} />}
               >
                 <EmptyState
                   icon="check"
-                  title={`${lastAccepted()} question(s) added to the question bank`}
-                  description="Accepted questions are saved as drafts. Approve them in the question bank after review."
-                  action={<Button size="sm" onClick={() => navigate(`/courses/${request.courseId}/questions`)}>Open question bank</Button>}
+                  title={t('{count} question(s) added to the question bank', { count: lastAccepted() ?? 0 })}
+                  description={t('Accepted questions are saved as drafts. Approve them in the question bank after review.')}
+                  action={<Button size="sm" onClick={() => navigate(`/courses/${request.courseId}/questions`)}>{t('Open question bank')}</Button>}
                 />
               </Show>
             </Card>
@@ -265,21 +266,21 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
           <Match when={items.length}>
             <Card>
               <CardHeader
-                title={`Generated questions (${items.length})`}
-                description={meta() ? `Provider: ${meta()!.provider}${meta()!.model ? ` · ${meta()!.model}` : ''} — review carefully; AI output can be wrong.` : undefined}
+                title={t('Generated questions ({count})', { count: items.length })}
+                description={meta() ? t('Provider: {provider} — review carefully; AI output can be wrong.', { provider: [meta()!.provider, meta()!.model].filter(Boolean).join(' · ') }) : undefined}
                 actions={
                   <>
-                    <Button size="sm" variant="ghost" onClick={() => setItems({}, 'selected', false)}>Clear selection</Button>
-                    <Button size="sm" variant="secondary" icon="trash" onClick={discardAll}>Discard all</Button>
-                    <Button size="sm" variant="secondary" icon="refresh" onClick={regenerate}>Regenerate</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setItems({}, 'selected', false)}>{t('Clear selection')}</Button>
+                    <Button size="sm" variant="secondary" icon="trash" onClick={discardAll}>{t('Discard all')}</Button>
+                    <Button size="sm" variant="secondary" icon="refresh" onClick={regenerate}>{t('Regenerate')}</Button>
                     <Button size="sm" icon="check" loading={accepting()} disabled={!selectedCount()} onClick={accept}>
-                      Accept selected ({selectedCount()})
+                      {t('Accept selected ({count})', { count: selectedCount() })}
                     </Button>
                   </>
                 }
               />
               <Show when={props.examId}>
-                <div class="px-5 pt-4"><InlineAlert tone="info">Accepted questions will be saved to the bank and added to your exam.</InlineAlert></div>
+                <div class="px-5 pt-4"><InlineAlert tone="info">{t('Accepted questions will be saved to the bank and added to your exam.')}</InlineAlert></div>
               </Show>
               <ul class="space-y-3 p-5">
                 <For each={items}>
@@ -303,12 +304,12 @@ export function AIGeneratorPanel(props: { initialCourseId?: string; examId?: str
         open={!!editingKey()}
         onOpenChange={(open) => !open && setEditingKey(null)}
         size="lg"
-        title="Edit generated question"
-        description="Your edits are kept locally until you accept the question."
+        title={t('Edit generated question')}
+        description={t('Your edits are kept locally until you accept the question.')}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setEditingKey(null)}>Cancel</Button>
-            <Button icon="check" onClick={saveEdit}>Save edits</Button>
+            <Button variant="secondary" onClick={() => setEditingKey(null)}>{t('Cancel')}</Button>
+            <Button icon="check" onClick={saveEdit}>{t('Save edits')}</Button>
           </>
         }
       >

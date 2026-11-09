@@ -2,7 +2,7 @@
 
 **Live demo:** https://mo7amin04.github.io/ExamPlatform/
 
-A web-based exam management platform for university teachers: manage courses and a reusable question bank,
+A web-based exam management platform for school teachers: manage subjects and a reusable question bank,
 build exams, draft questions with AI (always teacher-reviewed), preview exams as printed papers and export
 exams and answer keys to **PDF** and **Word (.docx)**.
 

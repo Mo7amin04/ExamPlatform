@@ -16,7 +16,17 @@ public sealed record ExamHeaderDto(
     DateTime? ExamDate,
     int DurationMinutes,
     decimal TotalPoints,
-    int QuestionCount);
+    int QuestionCount)
+{
+    private static readonly IReadOnlyList<string> Letterhead = Array.AsReadOnly(new[]
+    {
+        "دولة ليبيا",
+        "وزارة التربية والتعليم",
+        "مراقبة التربية والتعليم مصراتة"
+    });
+
+    public IReadOnlyList<string> LetterheadLines => Letterhead;
+}
 
 /// <summary>A labelled option/item as printed on the exam paper (e.g. "A", "b", "1").</summary>
 public sealed record PreviewItemDto(string Label, string Text);

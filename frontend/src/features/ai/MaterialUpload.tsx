@@ -1,3 +1,4 @@
+import { locale, t } from '~/utils/i18n'
 import { createSignal, Show } from 'solid-js'
 import { toast } from '~/components/feedback/toast'
 import { Button, IconButton } from '~/components/ui/Button'
@@ -18,20 +19,20 @@ export function MaterialUpload(props: { value: MaterialText | null; onChange: (v
     if (!file) return
     const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase()
     if (!ALLOWED.includes(ext)) {
-      toast.error('Unsupported file type', `Allowed: ${ALLOWED.join(', ')}`)
+      toast.error(t('Unsupported file type'), t('Allowed: {types}', { types: ALLOWED.join(', ') }))
       return
     }
     if (file.size > MAX_BYTES) {
-      toast.error('File too large', 'The maximum size is 10 MB.')
+      toast.error(t('File too large'), t('The maximum size is 10 MB.'))
       return
     }
     setUploading(true)
     try {
       const result = await aiApi.extractMaterial(file)
       props.onChange(result)
-      if (result.truncated) toast.info('Material truncated', 'Only the first part of the document will be used.')
+      if (result.truncated) toast.info(t('Material truncated'), t('Only the first part of the document will be used.'))
     } catch (err) {
-      toast.error('Could not read the file', getErrorMessage(err))
+      toast.error(t('Could not read the file'), getErrorMessage(err))
     } finally {
       setUploading(false)
       if (input) input.value = ''
@@ -40,14 +41,14 @@ export function MaterialUpload(props: { value: MaterialText | null; onChange: (v
 
   return (
     <div>
-      <p class="mb-1.5 text-sm font-medium text-slate-700">Course material (optional)</p>
+      <p class="mb-1.5 text-sm font-medium text-slate-700">{t('Subject material (optional)')}</p>
       <Show
         when={props.value}
         fallback={
           <div class="flex items-center gap-3 rounded-lg border border-dashed border-slate-300 p-3">
             <Icon name="upload" class="size-5 text-slate-400" />
-            <p class="flex-1 text-xs text-slate-500">Upload lecture notes or slides (.pdf, .docx, .pptx, max 10 MB). Files are read once and not stored.</p>
-            <Button size="sm" variant="secondary" loading={uploading()} onClick={() => input?.click()}>Choose file</Button>
+            <p class="flex-1 text-xs text-slate-500">{t('Upload lecture notes or slides (.pdf, .docx, .pptx, max 10 MB). Files are read once and not stored.')}</p>
+            <Button size="sm" variant="secondary" loading={uploading()} onClick={() => input?.click()}>{t('Choose file')}</Button>
           </div>
         }
       >
@@ -56,9 +57,9 @@ export function MaterialUpload(props: { value: MaterialText | null; onChange: (v
             <Icon name="file" class="size-5 text-brand-600" />
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium text-slate-900">{material().fileName}</p>
-              <p class="text-xs text-slate-500">{material().characterCount.toLocaleString()} characters extracted{material().truncated ? ' (truncated)' : ''}</p>
+              <p class="text-xs text-slate-500">{t('{count} characters extracted', { count: material().characterCount.toLocaleString(locale()) })}{material().truncated ? t(' (truncated)') : ''}</p>
             </div>
-            <IconButton icon="x" label="Remove material" onClick={() => props.onChange(null)} />
+            <IconButton icon="x" label={t('Remove material')} onClick={() => props.onChange(null)} />
           </div>
         )}
       </Show>

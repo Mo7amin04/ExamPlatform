@@ -1,9 +1,10 @@
+import { t, type TranslationKey } from '~/utils/i18n'
 import { For, Index, Match, Show, Switch } from 'solid-js'
 import type { ExamAnswerKey, ExamHeader, ExamPreview, PreviewQuestion } from '~/types/models'
 import { formatDate, formatDuration } from '~/utils/format'
-import { questionTypeLabels } from '~/features/questions/questionMeta'
+import { questionOptionLabel, questionTypeLabel } from '~/features/questions/questionMeta'
 
-const hints: Partial<Record<PreviewQuestion['type'], string>> = {
+const hints: Partial<Record<PreviewQuestion['type'], TranslationKey>> = {
   MultipleChoice: 'Choose one answer.',
   TrueFalse: 'Circle True or False.',
   MultipleSelect: 'Select all that apply.',
@@ -12,22 +13,25 @@ const hints: Partial<Record<PreviewQuestion['type'], string>> = {
   FillBlank: 'Fill in the blank(s).',
 }
 
-const marks = (points: number) => `${points} mark${points === 1 ? '' : 's'}`
+const marks = (points: number) => t(points === 1 ? '{count} mark' : '{count} marks', { count: points })
 
 function PaperHeader(props: { header: ExamHeader; answerKey?: boolean }) {
   return (
     <header class="text-center">
-      <p class="text-xl font-bold tracking-wide">{props.header.universityName}</p>
-      <p class="text-sm text-slate-600">{props.header.departmentName}</p>
-      <p class="text-sm">{props.header.courseCode} — {props.header.courseName}</p>
+      <div lang="ar" dir="rtl" class="mb-2 font-sans text-base font-semibold leading-snug">
+        <For each={props.header.letterheadLines}>{(line) => <p>{line}</p>}</For>
+      </div>
+      <p class="text-xl font-bold tracking-wide">{props.header.universityName === 'School' ? t('School') : props.header.universityName}</p>
+      <p class="text-sm text-slate-600">{t('Grade level: {name}', { name: props.header.departmentName })}</p>
+      <p class="text-sm">{t('Subject: {code} — {name}', { code: props.header.courseCode, name: props.header.courseName })}</p>
       <h1 class="mt-3 text-2xl font-bold">{props.header.title}</h1>
       <p class={`text-sm font-semibold uppercase tracking-wider ${props.answerKey ? 'text-red-700' : 'text-slate-500'}`}>
-        {props.answerKey ? 'Answer key — confidential' : `${props.header.type} examination`}
+        {props.answerKey ? t('Answer key — confidential') : t('{type} examination', { type: t(props.header.type) })}
       </p>
       <div class="mt-4 grid grid-cols-3 border-y border-slate-300 py-2 text-sm">
-        <span class="text-start"><strong>Date:</strong> {props.header.examDate ? formatDate(props.header.examDate, { dateStyle: 'full' }) : '____________'}</span>
-        <span><strong>Duration:</strong> {formatDuration(props.header.durationMinutes)}</span>
-        <span class="text-end"><strong>Total marks:</strong> {props.header.totalPoints}</span>
+        <span class="text-start"><strong>{t('Date:')}</strong> {props.header.examDate ? formatDate(props.header.examDate, { dateStyle: 'full' }) : '____________'}</span>
+        <span><strong>{t('Duration:')}</strong> {formatDuration(props.header.durationMinutes)}</span>
+        <span class="text-end"><strong>{t('Total marks:')}</strong> {props.header.totalPoints}</span>
       </div>
     </header>
   )
@@ -44,17 +48,16 @@ export function ExamPaper(props: { preview: ExamPreview }) {
     <article class="exam-paper print-root mx-auto max-w-[210mm] bg-white px-[16mm] py-[14mm] text-[15px] text-slate-900 shadow-sm ring-1 ring-slate-200">
       <PaperHeader header={props.preview.header} />
 
-      <section class="mt-5 space-y-4 rounded border border-slate-300 p-4 text-sm" aria-label="Student details">
-        <p>Student Name: <span class="inline-block w-[70%] border-b border-slate-500 align-bottom">&nbsp;</span></p>
-        <div class="flex justify-between gap-6">
-          <p class="flex-1">Student ID: <span class="inline-block w-[60%] border-b border-slate-500 align-bottom">&nbsp;</span></p>
-          <p class="flex-1 text-end">Signature: <span class="inline-block w-[55%] border-b border-slate-500 align-bottom">&nbsp;</span></p>
-        </div>
+      <section class="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 rounded border border-slate-300 p-4 text-sm" aria-label={t('Student details')}>
+        <div class="col-span-2"><PaperField label={t('Student Name:')} /></div>
+        <PaperField label={t('Class section:')} />
+        <PaperField label={t('Student ID:')} />
+        <PaperField label={t('Signature:')} />
       </section>
 
       <Show when={props.preview.header.instructions}>
         <section class="mt-4 rounded bg-slate-50 px-4 py-3 text-sm">
-          <p class="font-semibold">Instructions</p>
+          <p class="font-semibold">{t('Instructions')}</p>
           <p class="whitespace-pre-wrap">{props.preview.header.instructions}</p>
         </section>
       </Show>
@@ -74,7 +77,7 @@ export function ExamPaper(props: { preview: ExamPreview }) {
                 </div>
                 <div class="ps-9">
                   <Show when={hints[q().type]}>
-                    <p class="mt-1 font-sans text-xs italic text-slate-500">{hints[q().type]}</p>
+                    {(hint) => <p class="mt-1 font-sans text-xs italic text-slate-500">{t(hint())}</p>}
                   </Show>
                   <Switch>
                     <Match when={q().type === 'Matching'}>
@@ -91,7 +94,7 @@ export function ExamPaper(props: { preview: ExamPreview }) {
                       <ul class="mt-2 space-y-1">
                         <For each={q().options}>{(o) => <li>{o.label}. {o.text}</li>}</For>
                       </ul>
-                      <p class="mt-2 text-sm">Correct order: <span class="inline-block w-48 border-b border-slate-500">&nbsp;</span></p>
+                      <p class="mt-2 text-sm">{t('Correct order:')}{' '}<span class="inline-block w-48 border-b border-slate-500">&nbsp;</span></p>
                     </Match>
                     <Match when={q().options.length}>
                       <ul class="mt-2 space-y-1.5">
@@ -99,7 +102,7 @@ export function ExamPaper(props: { preview: ExamPreview }) {
                           {(o) => (
                             <li class="flex items-baseline gap-2">
                               <span class={`inline-block size-3.5 shrink-0 border border-slate-500 ${q().type === 'MultipleSelect' ? 'rounded-sm' : 'rounded-full'}`} />
-                              <span>{o.label}. {o.text}</span>
+                              <span>{o.label}. {questionOptionLabel(q().type, o.text)}</span>
                             </li>
                           )}
                         </For>
@@ -118,9 +121,13 @@ export function ExamPaper(props: { preview: ExamPreview }) {
         </Index>
       </ol>
 
-      <p class="mt-10 text-center font-sans text-xs text-slate-400">— End of exam —</p>
+      <p class="mt-10 text-center font-sans text-xs text-slate-400">{t('— End of exam —')}</p>
     </article>
   )
+}
+
+function PaperField(props: { label: string }) {
+  return <p class="flex items-baseline gap-2">{props.label}<span class="flex-1 border-b border-slate-500" aria-hidden="true">&nbsp;</span></p>
 }
 
 /** Teacher-only answer key sheet. */
@@ -131,10 +138,10 @@ export function AnswerKeySheet(props: { answerKey: ExamAnswerKey }) {
       <table class="mt-6 w-full border-collapse font-sans text-sm">
         <thead>
           <tr class="bg-slate-100 text-start">
-            <th class="w-14 border-b border-slate-300 px-2 py-2 text-start">Q#</th>
-            <th class="w-36 border-b border-slate-300 px-2 py-2 text-start">Type</th>
-            <th class="border-b border-slate-300 px-2 py-2 text-start">Correct answer</th>
-            <th class="w-20 border-b border-slate-300 px-2 py-2 text-end">Marks</th>
+            <th class="w-14 border-b border-slate-300 px-2 py-2 text-start">{t('Q#')}</th>
+            <th class="w-36 border-b border-slate-300 px-2 py-2 text-start">{t('Type')}</th>
+            <th class="border-b border-slate-300 px-2 py-2 text-start">{t('Correct answer')}</th>
+            <th class="w-20 border-b border-slate-300 px-2 py-2 text-end">{t('Marks')}</th>
           </tr>
         </thead>
         <tbody>
@@ -142,7 +149,7 @@ export function AnswerKeySheet(props: { answerKey: ExamAnswerKey }) {
             {(item) => (
               <tr class="exam-question align-top">
                 <td class="border-b border-slate-200 px-2 py-2 font-bold">{item.number}</td>
-                <td class="border-b border-slate-200 px-2 py-2 text-slate-600">{questionTypeLabels[item.type]}</td>
+                <td class="border-b border-slate-200 px-2 py-2 text-slate-600">{questionTypeLabel(item.type)}</td>
                 <td class="border-b border-slate-200 px-2 py-2">
                   <p class="whitespace-pre-wrap">{item.correctAnswer}</p>
                   <Show when={item.explanation}>
@@ -156,7 +163,7 @@ export function AnswerKeySheet(props: { answerKey: ExamAnswerKey }) {
         </tbody>
         <tfoot>
           <tr>
-            <td colSpan={3} class="px-2 py-2 text-end font-bold">Total</td>
+            <td colSpan={3} class="px-2 py-2 text-end font-bold">{t('Total')}</td>
             <td class="px-2 py-2 text-end font-bold tabular-nums">{props.answerKey.header.totalPoints}</td>
           </tr>
         </tfoot>

@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { Dialog as KDialog } from '@kobalte/core/dialog'
 import { AlertDialog } from '@kobalte/core/alert-dialog'
 import { createSignal, Show, type JSX, type ParentProps } from 'solid-js'
@@ -30,22 +31,22 @@ export function Modal(
         <KDialog.Overlay class="dialog-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-[1px]" />
         <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center">
           <KDialog.Content
-            class={`dialog-content flex max-h-[calc(100vh-2rem)] w-full flex-col rounded-xl bg-white shadow-xl ${sizes[props.size ?? 'md']}`}
+            class={`panel dialog-content flex max-h-[calc(100vh-2rem)] w-full flex-col ${sizes[props.size ?? 'md']}`}
           >
-            <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+            <div class="flex items-start justify-between gap-4 rounded-t-[14px] border-b border-brand-100 bg-brand-50 px-5 py-4">
               <div>
-                <KDialog.Title class="text-lg font-semibold text-slate-900">{props.title}</KDialog.Title>
+                <KDialog.Title class="font-display text-lg font-bold text-ink">{props.title}</KDialog.Title>
                 <Show when={props.description}>
                   <KDialog.Description class="mt-0.5 text-sm text-slate-500">{props.description}</KDialog.Description>
                 </Show>
               </div>
-              <KDialog.CloseButton class="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Close">
+              <KDialog.CloseButton class="icon-button p-1 text-ink hover:bg-brand-100" aria-label={t('Close')}>
                 <Icon name="x" class="size-5" />
               </KDialog.CloseButton>
             </div>
             <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">{props.children}</div>
             <Show when={props.footer}>
-              <div class="flex flex-wrap justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3">{props.footer}</div>
+              <div class="flex flex-wrap justify-end gap-2 rounded-b-[14px] border-t border-brand-100 bg-brand-50 px-5 py-3">{props.footer}</div>
             </Show>
           </KDialog.Content>
         </div>
@@ -91,15 +92,15 @@ export function useConfirm() {
       <AlertDialog.Portal>
         <AlertDialog.Overlay class="dialog-overlay fixed inset-0 z-50 bg-slate-900/40" />
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <AlertDialog.Content class="dialog-content w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
-            <AlertDialog.Title class="text-lg font-semibold text-slate-900">{options()?.title}</AlertDialog.Title>
+          <AlertDialog.Content class="panel dialog-content w-full max-w-md p-5">
+            <AlertDialog.Title class="font-display text-lg font-bold text-ink">{options()?.title}</AlertDialog.Title>
             <AlertDialog.Description class="mt-2 text-sm text-slate-600">{options()?.description}</AlertDialog.Description>
             <div class="mt-5 flex justify-end gap-2">
               <Button variant="secondary" onClick={close} disabled={busy()}>
-                Cancel
+                {t('Cancel')}
               </Button>
               <Button variant={options()?.tone === 'primary' ? 'primary' : 'danger'} loading={busy()} onClick={run}>
-                {options()?.confirmLabel ?? 'Confirm'}
+                {options()?.confirmLabel ?? t('Confirm')}
               </Button>
             </div>
           </AlertDialog.Content>

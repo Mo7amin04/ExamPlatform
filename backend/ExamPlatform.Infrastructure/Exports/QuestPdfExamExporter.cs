@@ -1,6 +1,7 @@
 using ExamPlatform.Application.Common.Interfaces;
 using ExamPlatform.Application.Features.Exams.Preview;
 using ExamPlatform.Domain.Enums;
+using QuestPDF.Drawing;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -18,6 +19,10 @@ public sealed class QuestPdfExamExporter : IExamPdfExporter
     static QuestPdfExamExporter()
     {
         QuestPDF.Settings.License = LicenseType.Community;
+        using var regular = ExamFonts.Open(ExamFonts.Regular);
+        using var bold = ExamFonts.Open(ExamFonts.Bold);
+        FontManager.RegisterFontFromStream(regular);
+        FontManager.RegisterFontFromStream(bold);
     }
 
     public byte[] ExportExam(ExamPreviewDto exam) =>
@@ -102,16 +107,19 @@ public sealed class QuestPdfExamExporter : IExamPdfExporter
     {
         page.Size(PageSizes.A4);
         page.Margin(2, Unit.Centimetre);
-        page.DefaultTextStyle(t => t.FontSize(10.5f).FontColor(Ink).LineHeight(1.3f));
+        page.DefaultTextStyle(t => t.FontFamily(ExamFonts.Family, "Lato").FontSize(10.5f).FontColor(Ink).LineHeight(1.3f));
     }
 
     private static void Header(IContainer container, ExamHeaderDto h, bool isAnswerKey)
     {
         container.Column(column =>
         {
+            foreach (var line in h.LetterheadLines)
+                column.Item().ContentFromRightToLeft().AlignCenter().Text(line).FontSize(12);
+
             column.Item().AlignCenter().Text(h.UniversityName).FontSize(15).Bold();
-            column.Item().AlignCenter().Text(h.DepartmentName).FontSize(11).FontColor(Muted);
-            column.Item().AlignCenter().Text(CourseLine(h)).FontSize(11);
+            column.Item().AlignCenter().Text($"Grade level: {h.DepartmentName}").FontSize(11).FontColor(Muted);
+            column.Item().AlignCenter().Text(SubjectLine(h)).FontSize(11);
             column.Item().PaddingTop(6).AlignCenter().Text(h.Title).FontSize(17).Bold();
             column.Item().AlignCenter().Text(isAnswerKey ? "ANSWER KEY — CONFIDENTIAL" : ExamTypeLabel(h.Type))
                 .FontSize(10).FontColor(isAnswerKey ? "#B91C1C" : Muted).SemiBold();
@@ -133,9 +141,10 @@ public sealed class QuestPdfExamExporter : IExamPdfExporter
             column.Item().Text("Student Name: ______________________________________________");
             column.Item().Row(row =>
             {
-                row.RelativeItem().Text("Student ID: ________________________");
-                row.RelativeItem().AlignRight().Text("Signature: ____________________");
+                row.RelativeItem().Text("Class section: ________________________");
+                row.RelativeItem().AlignRight().Text("Student ID: ________________________");
             });
+            column.Item().Text("Signature: ____________________");
         });
     }
 

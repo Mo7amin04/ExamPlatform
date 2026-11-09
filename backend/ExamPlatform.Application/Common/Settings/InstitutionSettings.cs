@@ -5,5 +5,10 @@ public sealed class InstitutionSettings
 {
     public const string SectionName = "Institution";
 
-    public string UniversityName { get; set; } = "University";
+    public string? SchoolName { get; set; }
+    public string? UniversityName { get; set; }
+
+    public string DisplayName => !string.IsNullOrWhiteSpace(SchoolName) ? SchoolName.Trim()
+        : !string.IsNullOrWhiteSpace(UniversityName) ? UniversityName.Trim()
+        : "School";
 }

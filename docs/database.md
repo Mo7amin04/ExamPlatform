@@ -31,8 +31,8 @@ Departments ─< Courses ─< Topics
 | `Users` | accounts | `Email` (unique), `PasswordHash`, `IsActive`, `LastLoginAt`, audit |
 | `Roles` | `Admin`, `Teacher` (seeded by migration) | `Name` (unique) |
 | `UserRoles` | user ↔ role | PK `(UserId, RoleId)` |
-| `Departments` | academic departments | `Code` (unique), `Name` |
-| `Courses` | courses | `Code` (unique), `DepartmentId`, `CreditHours` |
+| `Departments` | grade levels | `Code` (unique), `Name` |
+| `Courses` | subjects | `Code` (unique), required school-year `DepartmentId`, `CreditHours` |
 | `CourseTeachers` | teacher assignments | unique `(CourseId, TeacherId)` |
 | `Topics` | syllabus topics | unique `(CourseId, Name)`, `Order` |
 | `Questions` | question bank | `CourseId`, `TopicId?`, `Text`, `Type`, `Difficulty`, `BloomLevel`, `Points`, `Explanation`, `ExpectedAnswer`, `Status`, `Source`, audit |

@@ -6,11 +6,11 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'ai'
 type Size = 'sm' | 'md'
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-700 shadow-sm disabled:bg-brand-300',
-  secondary: 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 shadow-sm disabled:text-slate-400',
-  ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:text-slate-300',
-  danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm disabled:bg-red-300',
-  ai: 'bg-gradient-to-r from-violet-600 to-brand-600 text-white hover:from-violet-700 hover:to-brand-700 shadow-sm disabled:opacity-60',
+  primary: 'action-button bg-brand-600 text-white enabled:hover:bg-brand-700',
+  secondary: 'action-button bg-white text-ink enabled:hover:bg-brand-50',
+  ghost: 'icon-button font-semibold text-ink enabled:hover:bg-brand-50 disabled:opacity-50',
+  danger: 'action-button bg-red-700 text-white enabled:hover:bg-red-800',
+  ai: 'action-button bg-butter text-ink enabled:hover:bg-amber-300',
 }
 
 const sizes: Record<Size, string> = {
@@ -32,12 +32,12 @@ export function Button(props: ButtonProps) {
       type={local.type ?? 'button'}
       disabled={local.disabled || local.loading}
       aria-busy={local.loading}
-      class={`inline-flex shrink-0 items-center justify-center rounded-lg font-medium transition-colors disabled:cursor-not-allowed ${
+      class={`inline-flex shrink-0 items-center justify-center disabled:cursor-not-allowed ${
         variants[local.variant ?? 'primary']
       } ${sizes[local.size ?? 'md']} ${local.class ?? ''}`}
       {...rest}
     >
-      <Show when={local.loading} fallback={local.icon && <Icon name={local.icon} class="size-4" />}>
+      <Show when={local.loading} fallback={local.icon && <Icon name={local.icon} class="size-[18px]" />}>
         <Spinner class="size-4" />
       </Show>
       {local.children}
@@ -52,8 +52,8 @@ export function IconButton(props: JSX.ButtonHTMLAttributes<HTMLButtonElement> & 
       type="button"
       aria-label={local.label}
       title={local.label}
-      class={`inline-flex size-8 items-center justify-center rounded-md transition-colors disabled:opacity-40 ${
-        local.tone === 'danger' ? 'text-slate-500 hover:bg-red-50 hover:text-red-600' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+      class={`icon-button inline-flex size-8 items-center justify-center disabled:cursor-not-allowed disabled:opacity-40 ${
+        local.tone === 'danger' ? 'text-red-700 enabled:hover:bg-peach' : 'text-ink enabled:hover:bg-brand-100'
       } ${local.class ?? ''}`}
       {...rest}
     >

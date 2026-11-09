@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { Navigate, useLocation } from '@solidjs/router'
 import { Match, onMount, Switch, type ParentProps } from 'solid-js'
 import { LoadingState } from '~/components/feedback/States'
@@ -22,7 +23,7 @@ export function RequireAuth(props: ParentProps<{ roles?: RoleName[] }>) {
   return (
     <Switch>
       <Match when={auth.state.status === 'loading' || (auth.state.token && !auth.state.user && auth.state.status !== 'anonymous')}>
-        <LoadingState label="Restoring your session…" />
+        <LoadingState label={t('Restoring your session…')} />
       </Match>
       <Match when={!auth.isAuthenticated()}>
         <Navigate href={`/login?redirect=${encodeURIComponent(toAppPath(location.pathname) + location.search)}`} />

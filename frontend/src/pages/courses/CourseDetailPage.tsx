@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { A, useNavigate, useParams } from '@solidjs/router'
 import { createResource, createSignal, Match, Show, Switch } from 'solid-js'
 import { ErrorState, LoadingState } from '~/components/feedback/States'
@@ -21,16 +22,16 @@ export default function CourseDetailPage() {
 
   const remove = () =>
     confirm.ask({
-      title: `Delete ${course()?.code}?`,
-      description: 'The course and its topics will be deleted. Courses that already contain questions or exams cannot be deleted.',
-      confirmLabel: 'Delete course',
+      title: t('Delete {name}?', { name: course()?.code ?? '' }),
+      description: t('The subject and its topics will be deleted. Subjects that already contain questions or exams cannot be deleted.'),
+      confirmLabel: t('Delete subject'),
       onConfirm: async () => {
         try {
           await coursesApi.remove(params.id)
-          toast.success('Course deleted')
+          toast.success(t('Subject deleted'))
           navigate('/courses')
         } catch (err) {
-          toast.error('Could not delete course', getErrorMessage(err))
+          toast.error(t('Could not delete subject'), getErrorMessage(err))
         }
       },
     })
@@ -50,14 +51,14 @@ export default function CourseDetailPage() {
         {(c) => (
           <>
             <PageHeader
-              breadcrumb={<A href="/courses" class="hover:text-slate-700">Courses</A>}
+              breadcrumb={<A href="/courses" class="hover:text-slate-700">{t('Subjects')}</A>}
               title={<><span class="text-brand-700">{c().code}</span> · {c().name}</>}
-              description={`${c().departmentName} · ${c().creditHours} credit hours`}
+              description={t('Grade level: {name}', { name: c().departmentName })}
               actions={
                 <>
-                  <Button variant="secondary" icon="edit" onClick={() => setEditOpen(true)}>Edit</Button>
-                  <Button variant="secondary" icon="trash" onClick={remove}>Delete</Button>
-                  <Button icon="questions" onClick={() => navigate(`/courses/${c().id}/questions`)}>Question bank</Button>
+                  <Button variant="secondary" icon="edit" onClick={() => setEditOpen(true)}>{t('Edit')}</Button>
+                  <Button variant="secondary" icon="trash" onClick={remove}>{t('Delete')}</Button>
+                  <Button icon="questions" onClick={() => navigate(`/courses/${c().id}/questions`)}>{t('Question bank')}</Button>
                 </>
               }
             />
@@ -65,9 +66,9 @@ export default function CourseDetailPage() {
               <p class="-mt-2 mb-6 max-w-3xl text-sm text-slate-600">{c().description}</p>
             </Show>
             <div class="mb-6 grid gap-4 sm:grid-cols-3">
-              <StatCard label="Topics" value={c().topics.length} />
-              <StatCard label="Questions" value={<A href={`/courses/${c().id}/questions`} class="hover:text-brand-700">{c().questionCount}</A>} />
-              <StatCard label="Exams" value={<A href={`/exams?courseId=${c().id}`} class="hover:text-brand-700">{c().examCount}</A>} />
+              <StatCard label={t('Topics')} value={c().topics.length} icon="book" />
+              <StatCard label={t('Questions')} value={<A href={`/courses/${c().id}/questions`} class="hover:text-brand-700">{c().questionCount}</A>} icon="questions" tone="peach" />
+              <StatCard label={t('Exams')} value={<A href={`/exams?courseId=${c().id}`} class="hover:text-brand-700">{c().examCount}</A>} icon="exam" tone="butter" />
             </div>
             <div class="grid gap-6 lg:grid-cols-3">
               <div class="lg:col-span-2">

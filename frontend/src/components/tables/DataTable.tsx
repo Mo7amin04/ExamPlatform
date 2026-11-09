@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { For, Show, type JSX } from 'solid-js'
 import type { Pagination as PaginationMeta } from '~/types/api'
 import { IconButton } from '~/components/ui/Button'
@@ -49,14 +50,14 @@ export function Pagination(props: { pagination: PaginationMeta; onPageChange: (p
   return (
     <div class="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-sm text-slate-600">
       <span>
-        <Show when={props.pagination.totalCount > 0} fallback="No results">
-          Showing <strong>{from()}</strong>–<strong>{to()}</strong> of <strong>{props.pagination.totalCount}</strong>
+        <Show when={props.pagination.totalCount > 0} fallback={t('No results')}>
+          {t('Showing {from}–{to} of {total}', { from: from(), to: to(), total: props.pagination.totalCount })}
         </Show>
       </span>
       <div class="flex items-center gap-1">
         <IconButton
           icon="chevronLeft"
-          label="Previous page"
+          label={t('Previous page')}
           class="rtl:rotate-180"
           disabled={props.pagination.page <= 1}
           onClick={() => props.onPageChange(props.pagination.page - 1)}
@@ -66,7 +67,7 @@ export function Pagination(props: { pagination: PaginationMeta; onPageChange: (p
         </span>
         <IconButton
           icon="chevronRight"
-          label="Next page"
+          label={t('Next page')}
           class="rtl:rotate-180"
           disabled={props.pagination.page >= props.pagination.totalPages}
           onClick={() => props.onPageChange(props.pagination.page + 1)}

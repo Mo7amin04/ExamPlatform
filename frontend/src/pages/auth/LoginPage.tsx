@@ -3,6 +3,8 @@ import { createSignal, Show } from 'solid-js'
 import { InlineAlert } from '~/components/feedback/States'
 import { TextInput } from '~/components/forms/Fields'
 import { Button } from '~/components/ui/Button'
+import { Icon } from '~/components/ui/Icon'
+import { Card } from '~/components/ui/Primitives'
 import { getErrorMessage, getFieldErrors } from '~/services/api'
 import { auth } from '~/stores/auth.store'
 import { t } from '~/utils/i18n'
@@ -40,8 +42,9 @@ export default function LoginPage() {
 
   return (
     <Show when={!auth.isAuthenticated()} fallback={<Navigate href={redirectTarget()} />}>
-      <div class="w-full max-w-sm">
-        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{t('auth.title')}</h1>
+      <Card class="w-full max-w-md p-6 sm:p-8">
+        <div class="sticker mb-4 size-12 -rotate-6 bg-mint"><Icon name="key" class="size-6" /></div>
+        <h1 class="font-display text-3xl font-extrabold tracking-tight text-ink">{t('auth.title')}</h1>
         <p class="mt-1 text-sm text-slate-500">{t('app.tagline')}</p>
 
         <form class="mt-8 space-y-4" onSubmit={submit} novalidate>
@@ -71,7 +74,7 @@ export default function LoginPage() {
             {t('auth.submit')}
           </Button>
         </form>
-      </div>
+      </Card>
     </Show>
   )
 }

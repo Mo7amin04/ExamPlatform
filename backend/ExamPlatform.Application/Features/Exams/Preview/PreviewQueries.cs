@@ -19,7 +19,7 @@ public sealed class GetExamPreviewQueryHandler(
     public async Task<ExamPreviewDto> Handle(GetExamPreviewQuery request, CancellationToken cancellationToken)
     {
         var exam = await db.LoadForDocumentAsync(request.ExamId, access, cancellationToken);
-        return ExamDocumentBuilder.BuildPreview(exam, institution.Value.UniversityName);
+        return ExamDocumentBuilder.BuildPreview(exam, institution.Value.DisplayName);
     }
 }
 
@@ -35,6 +35,6 @@ public sealed class GetExamAnswerKeyQueryHandler(
     public async Task<ExamAnswerKeyDto> Handle(GetExamAnswerKeyQuery request, CancellationToken cancellationToken)
     {
         var exam = await db.LoadForDocumentAsync(request.ExamId, access, cancellationToken);
-        return ExamDocumentBuilder.BuildAnswerKey(exam, institution.Value.UniversityName);
+        return ExamDocumentBuilder.BuildAnswerKey(exam, institution.Value.DisplayName);
     }
 }

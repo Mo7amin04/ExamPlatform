@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { useNavigate, useParams } from '@solidjs/router'
 import { createResource, Match, Switch } from 'solid-js'
 import { EmptyState, ErrorState, LoadingState } from '~/components/feedback/States'
@@ -15,16 +16,16 @@ export default function AnswerKeyPage() {
 
   return (
     <div class="min-h-screen bg-slate-100 print:bg-white">
-      <PrintToolbar examId={params.id} title={`${answerKey()?.header.title ?? 'Exam'} — Answer key`}>
-        <Button variant="secondary" icon="eye" onClick={() => navigate(`/exams/${params.id}/preview`)}>Exam paper</Button>
+      <PrintToolbar examId={params.id} title={t('{title} — Answer key', { title: answerKey()?.header.title ?? t('Exam') })}>
+        <Button variant="secondary" icon="eye" onClick={() => navigate(`/exams/${params.id}/preview`)}>{t('Exam paper')}</Button>
       </PrintToolbar>
       <div class="px-4 py-8 print:p-0">
         <Switch>
           <Match when={answerKey.error && isStatus(answerKey.error, 403)}><ForbiddenPage /></Match>
           <Match when={answerKey.error}><ErrorState error={answerKey.error} onRetry={refetch} /></Match>
-          <Match when={!answerKey()}><LoadingState label="Preparing answer key…" /></Match>
+          <Match when={!answerKey()}><LoadingState label={t('Preparing answer key…')} /></Match>
           <Match when={answerKey()?.items.length === 0}>
-            <EmptyState icon="key" title="No questions yet" description="Add questions to the exam to build its answer key." />
+            <EmptyState icon="key" title={t('No questions yet')} description={t('Add questions to the exam to build its answer key.')} />
           </Match>
           <Match when={answerKey()}>{(k) => <AnswerKeySheet answerKey={k()} />}</Match>
         </Switch>

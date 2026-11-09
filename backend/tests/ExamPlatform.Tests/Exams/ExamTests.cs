@@ -157,21 +157,29 @@ public class ExamTests : IDisposable
         Assert.Throws<DomainException>(() => exam.Publish(1));
     }
 
-    [Fact]
-    public async Task Preview_HidesAnswers_AnswerKeyShowsThem()
+    [Theory]
+    [InlineData("Test School", "Test University", "Test School")]
+    [InlineData("", "Test University", "Test University")]
+    [InlineData(null, null, "School")]
+    public async Task Preview_HidesAnswers_AnswerKeyShowsThem(string? schoolName, string? universityName, string expectedName)
     {
+        const string gradeLevel = "الصف الثالث ثانوي — علمي";
+        _ctx.Department.Name = gradeLevel;
         var question = _ctx.AddQuestion();
         var exam = _ctx.AddExam();
         exam.AddQuestion(question);
         await _ctx.Db.SaveChangesAsync();
-        var institution = Options.Create(new InstitutionSettings { UniversityName = "Test University" });
+        var institution = Options.Create(new InstitutionSettings { SchoolName = schoolName, UniversityName = universityName });
 
         var preview = await new GetExamPreviewQueryHandler(_ctx.Db, _ctx.Access, institution)
             .Handle(new GetExamPreviewQuery(exam.Id), CancellationToken.None);
         var key = await new GetExamAnswerKeyQueryHandler(_ctx.Db, _ctx.Access, institution)
             .Handle(new GetExamAnswerKeyQuery(exam.Id), CancellationToken.None);
 
-        Assert.Equal("Test University", preview.Header.UniversityName);
+        Assert.Equal(expectedName, preview.Header.UniversityName);
+        Assert.Equal(expectedName, key.Header.UniversityName);
+        Assert.Equal(gradeLevel, preview.Header.DepartmentName);
+        Assert.Equal(gradeLevel, key.Header.DepartmentName);
         Assert.Equal(["A", "B"], preview.Questions.Single().Options.Select(o => o.Label));
         Assert.Equal("B. 4", key.Items.Single().CorrectAnswer);
     }

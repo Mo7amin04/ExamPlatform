@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { createRoot } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { configureApiAuth } from '~/services/api'
@@ -104,10 +105,10 @@ function createAuthStore() {
     onUnauthorized: () => {
       const wasAuthenticated = state.status === 'authenticated'
       clearSession()
-      if (wasAuthenticated) showToast({ title: 'Session expired', description: 'Please sign in again.', variant: 'warning' })
+      if (wasAuthenticated) showToast({ title: t('Session expired'), description: t('Please sign in again.'), variant: 'warning' })
       unauthorizedHandler?.()
     },
-    onForbidden: (message) => showToast({ title: 'Access denied', description: message, variant: 'error' }),
+    onForbidden: (message) => showToast({ title: t('Access denied'), description: message, variant: 'error' }),
   })
 
   return {

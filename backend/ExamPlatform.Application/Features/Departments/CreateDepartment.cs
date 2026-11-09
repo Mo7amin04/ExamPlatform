@@ -21,7 +21,7 @@ public sealed class CreateDepartmentCommandHandler(IApplicationDbContext db)
     {
         var code = request.Code.Trim().ToUpperInvariant();
         if (await db.Departments.AnyAsync(d => d.Code == code, cancellationToken))
-            throw new ConflictException($"A department with code '{code}' already exists.");
+            throw new ConflictException("A grade level with this code already exists.");
 
         var department = new Department
         {

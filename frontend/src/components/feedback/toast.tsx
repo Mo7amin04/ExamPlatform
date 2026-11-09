@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { Toast, toaster } from '@kobalte/core/toast'
 import { Portal } from 'solid-js/web'
 import { Show } from 'solid-js'
@@ -39,7 +40,7 @@ export function showToast({ title, description, variant = 'info' }: ToastOptions
           <Toast.Description class="mt-0.5 text-sm opacity-90">{description}</Toast.Description>
         </Show>
       </div>
-      <Toast.CloseButton class="rounded p-0.5 opacity-60 hover:opacity-100" aria-label="Dismiss">
+      <Toast.CloseButton class="rounded p-0.5 opacity-60 hover:opacity-100" aria-label={t('Dismiss')}>
         <Icon name="x" class="size-4" />
       </Toast.CloseButton>
     </Toast>

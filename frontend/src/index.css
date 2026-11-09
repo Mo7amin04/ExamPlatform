@@ -1,30 +1,92 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", "Segoe UI", "Noto Sans Arabic", system-ui, -apple-system, sans-serif;
-  --font-serif: "Georgia", "Times New Roman", "Noto Naskh Arabic", serif;
+  --font-sans: "Tajawal", "Segoe UI", "Noto Sans Arabic", system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-sans);
 
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #dbe6fe;
-  --color-brand-200: #bfd3fe;
-  --color-brand-300: #93b4fd;
-  --color-brand-400: #608bfa;
-  --color-brand-500: #3b66f5;
-  --color-brand-600: #2549ea;
-  --color-brand-700: #1d37d7;
-  --color-brand-800: #1e2fae;
-  --color-brand-900: #1e2d89;
+  --color-brand-50: #f6f1ff;
+  --color-brand-100: #ebe0ff;
+  --color-brand-200: #dac8ff;
+  --color-brand-300: #c0a4ff;
+  --color-brand-400: #a27bed;
+  --color-brand-500: #8256d5;
+  --color-brand-600: #6a43b4;
+  --color-brand-700: #553391;
+  --color-brand-800: #452977;
+  --color-brand-900: #352259;
+  --color-ink: #2d2341;
+  --color-paper: #fffaf0;
+  --color-butter: #ffe49a;
+  --color-mint: #c5f0df;
+  --color-peach: #ffded4;
 }
 
 @layer base {
   html {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-paper text-ink antialiased;
+    background-image: radial-gradient(#2d234119 1px, transparent 1px);
+    background-size: 20px 20px;
   }
   body {
     @apply min-h-screen font-sans;
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border-2 border-ink bg-white;
+    box-shadow: 0 4px 0 var(--color-ink);
+  }
+
+  .panel-link {
+    transition: translate 140ms ease, box-shadow 140ms ease;
+  }
+
+  .group:is(:hover, :focus-visible) .panel-link {
+    translate: 0 -3px;
+    box-shadow: 0 7px 0 var(--color-ink);
+  }
+
+  .sticker {
+    @apply inline-flex shrink-0 items-center justify-center rounded-xl border-2 border-ink text-ink;
+    box-shadow: 0 2px 0 var(--color-ink);
+  }
+
+  .action-button {
+    @apply rounded-xl border-2 border-ink font-bold;
+    box-shadow: 0 3px 0 var(--color-ink);
+    transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease, translate 140ms ease;
+  }
+
+  .action-button:not(:disabled):active {
+    translate: 0 2px;
+    box-shadow: 0 1px 0 var(--color-ink);
+  }
+
+  .action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .icon-button {
+    @apply rounded-lg border border-transparent transition-colors;
+  }
+
+  .icon-button:not(:disabled):hover {
+    @apply border-ink;
+  }
+
+  .nav-link {
+    @apply rounded-xl border-2 border-transparent font-semibold text-ink transition-colors hover:bg-paper;
+  }
+
+  .nav-link.is-current {
+    @apply border-ink bg-brand-100 font-bold;
+    box-shadow: 0 2px 0 var(--color-ink);
   }
 }
 
@@ -53,9 +115,14 @@
   to { opacity: 1; transform: scale(1); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .action-button, .panel-link, .nav-link, .icon-button { transition: none; }
+  .toast[data-opened], .toast[data-closed], .dialog-overlay[data-expanded], .dialog-content[data-expanded] { animation: none; }
+}
+
 /* ---------- Printed exam paper ---------- */
 .exam-paper {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   line-height: 1.55;
 }
 

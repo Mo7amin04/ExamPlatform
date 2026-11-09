@@ -120,7 +120,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Exam Platform API",
         Version = "v1",
-        Description = "Exam management platform for university teachers."
+        Description = "Exam management platform for school teachers."
     });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -152,7 +152,7 @@ if (!app.Environment.IsEnvironment("Testing"))
     try
     {
         await app.Services.InitializeDatabaseAsync(
-            applyMigrations: configuration.GetValue("Database:ApplyMigrationsOnStartup", false));
+            applyMigrations: configuration.GetValue("Database:ApplyMigrationsOnStartup", true));
     }
     catch (Exception ex)
     {

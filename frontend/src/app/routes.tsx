@@ -7,7 +7,7 @@ import { NotFoundPage } from '~/pages/errors/ErrorPages'
 
 const LoginPage = lazy(() => import('~/pages/auth/LoginPage'))
 const DashboardPage = lazy(() => import('~/pages/dashboard/DashboardPage'))
-const DepartmentsPage = lazy(() => import('~/pages/departments/DepartmentsPage'))
+const GradeLevelsPage = lazy(() => import('~/pages/grade-levels/GradeLevelsPage'))
 const CoursesPage = lazy(() => import('~/pages/courses/CoursesPage'))
 const CourseDetailPage = lazy(() => import('~/pages/courses/CourseDetailPage'))
 const QuestionBankPage = lazy(() => import('~/pages/questions/QuestionBankPage'))
@@ -50,7 +50,9 @@ export function AppRoutes() {
       <Route path="/" component={Protected}>
         <Route path="/" component={() => <Navigate href="/dashboard" />} />
         <Route path="/dashboard" component={DashboardPage} />
-        <Route path="/departments" component={DepartmentsPage} />
+        <Route path="/grade-levels" component={GradeLevelsPage} />
+        <Route path="/school-years" component={() => <Navigate href="/grade-levels" />} />
+        <Route path="/departments" component={() => <Navigate href="/grade-levels" />} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/courses/:id" component={CourseDetailPage} />
         <Route path="/courses/:id/questions" component={QuestionBankPage} />

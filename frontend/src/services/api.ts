@@ -1,3 +1,4 @@
+import { t, translateMessage } from '~/utils/i18n'
 import axios, { AxiosError, type AxiosResponse } from 'axios'
 import type { ApiResponse, FieldError, Paged, PagedResponse } from '~/types/api'
 
@@ -65,18 +66,18 @@ export function cleanParams<T extends object>(params: T): Partial<T> {
   ) as Partial<T>
 }
 
-export function getErrorMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
+export function getErrorMessage(error: unknown, fallback = t('Something went wrong. Please try again.')): string {
   if (axios.isAxiosError(error)) {
     if (!error.response) {
       return error.code === 'ECONNABORTED'
-        ? 'The request timed out. Please try again.'
-        : 'Cannot reach the server. Check your connection and try again.'
+        ? t('The request timed out. Please try again.')
+        : t('Cannot reach the server. Check your connection and try again.')
     }
     const body = error.response.data as Partial<ApiResponse<unknown>> | undefined
-    if (body?.message) return body.message
-    if (error.response.status === 404) return 'The requested resource was not found.'
+    if (body?.message) return translateMessage(body.message)
+    if (error.response.status === 404) return t('The requested resource was not found.')
   }
-  if (error instanceof Error && error.message) return error.message
+  if (error instanceof Error && error.message) return translateMessage(error.message)
   return fallback
 }
 
@@ -87,7 +88,7 @@ export function getFieldErrors(error: unknown): Record<string, string> {
   const result: Record<string, string> = {}
   for (const e of errors as FieldError[]) {
     const key = normalizeField(e.field)
-    if (!(key in result)) result[key] = e.message
+    if (!(key in result)) result[key] = translateMessage(e.message)
   }
   return result
 }

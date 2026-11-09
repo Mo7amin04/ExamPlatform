@@ -1,3 +1,4 @@
+import { t } from '~/utils/i18n'
 import { createResource, createSignal } from 'solid-js'
 import { SelectInput, TextInput } from '~/components/forms/Fields'
 import { Button } from '~/components/ui/Button'
@@ -43,15 +44,15 @@ export function QuestionFilterBar(props: {
     <div class="flex flex-wrap items-start gap-3 border-b border-slate-100 p-4">
       <TextInput
         class="w-full min-w-[14rem] flex-1 sm:w-auto"
-        placeholder="Search text or tags…"
-        aria-label="Search questions"
+        placeholder={t('Search text or tags…')}
+        aria-label={t('Search questions')}
         value={search()}
         onInput={(e) => onSearch(e.currentTarget.value)}
       />
       <SelectInput
         class="w-full sm:w-36"
-        aria-label="Course"
-        placeholder="All courses"
+        aria-label={t('Subject')}
+        placeholder={t('All subjects')}
         disabled={props.lockCourse}
         options={(courses() ?? []).map((c) => ({ value: c.id, label: c.code }))}
         value={props.filters.courseId ?? ''}
@@ -59,23 +60,23 @@ export function QuestionFilterBar(props: {
       />
       <SelectInput
         class="w-full sm:w-44"
-        aria-label="Topic"
-        placeholder="All topics"
+        aria-label={t('Topic')}
+        placeholder={t('All topics')}
         disabled={!props.filters.courseId}
         options={(topics() ?? []).map((t) => ({ value: t.id, label: t.name }))}
         value={props.filters.topicId ?? ''}
         onChange={(v) => props.onChange({ topicId: v || undefined })}
       />
-      <SelectInput class="w-full sm:w-44" aria-label="Type" placeholder="All types" options={questionTypeOptions} value={props.filters.type ?? ''}
+      <SelectInput class="w-full sm:w-44" aria-label={t('Type')} placeholder={t('All types')} options={questionTypeOptions} value={props.filters.type ?? ''}
         onChange={(v) => props.onChange({ type: (v || undefined) as QuestionType | undefined })} />
-      <SelectInput class="w-full sm:w-36" aria-label="Difficulty" placeholder="Any difficulty" options={difficultyOptions} value={props.filters.difficulty ?? ''}
+      <SelectInput class="w-full sm:w-36" aria-label={t('Difficulty')} placeholder={t('Any difficulty')} options={difficultyOptions} value={props.filters.difficulty ?? ''}
         onChange={(v) => props.onChange({ difficulty: (v || undefined) as Difficulty | undefined })} />
-      <SelectInput class="w-full sm:w-40" aria-label="Bloom level" placeholder="Any Bloom level" options={bloomOptions} value={props.filters.bloomLevel ?? ''}
+      <SelectInput class="w-full sm:w-40" aria-label={t('Bloom level')} placeholder={t('Any Bloom level')} options={bloomOptions} value={props.filters.bloomLevel ?? ''}
         onChange={(v) => props.onChange({ bloomLevel: (v || undefined) as BloomLevel | undefined })} />
       <div class="flex w-full gap-2 sm:w-auto">
-        <SelectInput class="flex-1 sm:w-32" aria-label="Status" placeholder="Active" options={statusOptions} value={props.filters.status ?? ''}
+        <SelectInput class="flex-1 sm:w-32" aria-label={t('Status')} placeholder={t('Active')} options={statusOptions} value={props.filters.status ?? ''}
           onChange={(v) => props.onChange({ status: (v || undefined) as QuestionStatus | undefined })} />
-        <Button variant="ghost" onClick={reset} disabled={!hasFilters()} title="Clear filters" aria-label="Clear filters" icon="x" class="px-2" />
+        <Button variant="ghost" onClick={reset} disabled={!hasFilters()} title={t('Clear filters')} aria-label={t('Clear filters')} icon="x" class="px-2" />
       </div>
     </div>
   )

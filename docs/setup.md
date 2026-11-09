@@ -72,7 +72,7 @@ All settings can be provided through `appsettings*.json`, user-secrets (Developm
 | `AI:Model` | *(empty → `gemini-2.5-flash`)* | Gemini model id |
 | `AI:ApiKey` | *(empty)* | Gemini API key. **Never commit.** Without it AI endpoints return `503`. |
 | `AI:TimeoutSeconds` / `AI:Temperature` | `90` / `0.7` | provider call settings |
-| `Institution:UniversityName` | `University of Excellence` | printed on previews and exports |
+| `Institution:SchoolName` | `School` | printed on previews and exports. If unset, uses a configured `Institution:UniversityName` before falling back to `School`. |
 | `FileUpload:MaxFileSizeBytes` | `10485760` (10 MB) | max course-material upload |
 | `FileUpload:AllowedExtensions` | `.pdf .docx .pptx` | allowed upload types |
 | `Cors:AllowedOrigins` | `http://localhost:5173` | SPA origins allowed to call the API directly |
