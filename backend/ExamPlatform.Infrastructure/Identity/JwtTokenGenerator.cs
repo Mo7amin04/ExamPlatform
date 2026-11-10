@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using ExamPlatform.Application.Common.Interfaces;
 using ExamPlatform.Domain.Entities;
@@ -38,8 +39,13 @@ public sealed class JwtTokenGenerator(IOptions<JwtSettings> options, TimeProvide
     public const string RoleClaimType = "role";
     public const string NameClaimType = JwtRegisteredClaimNames.Name;
     public const string UserIdClaimType = JwtRegisteredClaimNames.Sub;
+    public const string CredentialVersionClaimType = "pwd_ver";
 
     private readonly JwtSettings _settings = options.Value;
+
+    public static string CredentialVersion(string passwordHash, JwtSettings settings) =>
+        Convert.ToHexString(HMACSHA256.HashData(settings.GetSecurityKey().Key,
+            Encoding.UTF8.GetBytes($"password-version:{passwordHash}")));
 
     public AccessToken Generate(User user, IReadOnlyCollection<string> roles)
     {
@@ -51,6 +57,7 @@ public sealed class JwtTokenGenerator(IOptions<JwtSettings> options, TimeProvide
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Name, user.FullName),
+            new(CredentialVersionClaimType, CredentialVersion(user.PasswordHash, _settings)),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
         claims.AddRange(roles.Select(role => new Claim(RoleClaimType, role)));

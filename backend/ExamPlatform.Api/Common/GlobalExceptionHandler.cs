@@ -1,6 +1,7 @@
 using ExamPlatform.Application.Common.Exceptions;
 using ExamPlatform.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExamPlatform.Api.Common;
 
@@ -20,6 +21,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             UnauthorizedException ex => (StatusCodes.Status401Unauthorized, ApiResponse.Fail(ex.Message)),
             ForbiddenAccessException ex => (StatusCodes.Status403Forbidden, ApiResponse.Fail(ex.Message)),
             ConflictException ex => (StatusCodes.Status409Conflict, ApiResponse.Fail(ex.Message)),
+            DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, ApiResponse.Fail("The record changed while you were editing it. Please try again.")),
             DomainException ex => (StatusCodes.Status409Conflict, ApiResponse.Fail(ex.Message)),
             AIProviderException { IsConfigurationError: true } ex => (StatusCodes.Status503ServiceUnavailable, ApiResponse.Fail(ex.Message)),
             AIProviderException ex => (StatusCodes.Status502BadGateway, ApiResponse.Fail(ex.Message)),

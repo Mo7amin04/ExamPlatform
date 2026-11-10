@@ -6,6 +6,7 @@ import { DataTable } from '~/components/tables/DataTable'
 import { Button } from '~/components/ui/Button'
 import { Modal } from '~/components/ui/Dialog'
 import { Badge, Card, CardHeader, PageHeader, SkeletonRows } from '~/components/ui/Primitives'
+import { ChangePasswordForm } from '~/features/auth/ChangePasswordForm'
 import { getErrorMessage, getFieldErrors } from '~/services/api'
 import { usersApi } from '~/services/auth.api'
 import { auth } from '~/stores/auth.store'
@@ -154,6 +155,7 @@ export default function SettingsPage() {
           </div>
         </Card>
       </div>
+      <ChangePasswordForm />
       <Show when={auth.isAdmin()}>
         <UserManagement />
       </Show>

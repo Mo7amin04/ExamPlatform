@@ -1,7 +1,7 @@
 # API
 
 Base URL (development): `http://localhost:5259`. Interactive docs: `/swagger` (Development).
-All endpoints except `POST /api/auth/login` require `Authorization: Bearer <token>`. Enums are strings.
+All endpoints except login and password recovery require `Authorization: Bearer <token>`. Enums are strings.
 
 ## Response envelope
 
@@ -38,6 +38,9 @@ Policies: **Admin** = `AdminOnly`, **Staff** = Teacher or Admin.
 |--------|------|--------|-------------|
 | POST | `/api/auth/login` | anonymous (10/min/IP) | `{ email, password }` → `{ accessToken, expiresAt, user }` |
 | GET | `/api/auth/me` | authenticated | current user `{ id, fullName, email, roles }` |
+| POST | `/api/auth/change-password` | authenticated (5/min/account) | `{ currentPassword, newPassword }` → 204. Revokes the account's existing access tokens. |
+| POST | `/api/auth/forgot-password` | anonymous (5/15 min/IP) | `{ email }` → 202 regardless of whether the account exists. Returns 503 when email delivery is unconfigured or the request queue is full. |
+| POST | `/api/auth/reset-password` | anonymous (10/min/IP) | `{ token, newPassword }` → 204. Consumes the reset link and revokes the account's existing access tokens. |
 | GET | `/api/users?role=&search=` | Admin | list users |
 | POST | `/api/users` | Admin | `{ fullName, email, password, roles[] }` |
 | PATCH | `/api/users/{id}/status` | Admin | `{ isActive }` |

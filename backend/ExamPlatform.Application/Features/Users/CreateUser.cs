@@ -1,5 +1,6 @@
 using ExamPlatform.Application.Common.Exceptions;
 using ExamPlatform.Application.Common.Interfaces;
+using ExamPlatform.Application.Features.Auth;
 using ExamPlatform.Domain.Constants;
 using ExamPlatform.Domain.Entities;
 using FluentValidation;
@@ -17,13 +18,7 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
     {
         RuleFor(x => x.FullName).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(256);
-        RuleFor(x => x.Password)
-            .NotEmpty()
-            .MinimumLength(8).WithMessage("Password must be at least 8 characters.")
-            .MaximumLength(128)
-            .Matches("[A-Z]").WithMessage("Password must contain an uppercase letter.")
-            .Matches("[a-z]").WithMessage("Password must contain a lowercase letter.")
-            .Matches("[0-9]").WithMessage("Password must contain a digit.");
+        PasswordRules.Apply(RuleFor(x => x.Password));
         RuleFor(x => x.Roles).NotEmpty().WithMessage("At least one role is required.");
         RuleForEach(x => x.Roles)
             .Must(r => RoleNames.All.Contains(r))

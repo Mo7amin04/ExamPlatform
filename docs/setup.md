@@ -76,6 +76,18 @@ All settings can be provided through `appsettings*.json`, user-secrets (Developm
 | `FileUpload:MaxFileSizeBytes` | `10485760` (10 MB) | max course-material upload |
 | `FileUpload:AllowedExtensions` | `.pdf .docx .pptx` | allowed upload types |
 | `Cors:AllowedOrigins` | `http://localhost:5173` | SPA origins allowed to call the API directly |
+
+Password recovery uses SMTP with STARTTLS. Set these on the API host, using environment variables or .NET user secrets for credentials:
+
+| Environment variable | Purpose |
+| --- | --- |
+| `PasswordRecovery__ResetPageUrl` | Full public SPA reset page URL, such as `https://school.example/reset-password`. Include the deployment base path if there is one. Local HTTP is allowed on loopback only. |
+| `PasswordRecovery__SmtpHost` | SMTP server hostname |
+| `PasswordRecovery__SmtpPort` | SMTP STARTTLS port, default `587` |
+| `PasswordRecovery__FromAddress` | Sender address accepted by the SMTP service |
+| `PasswordRecovery__SmtpUsername`, `PasswordRecovery__SmtpPassword` | SMTP credentials, if required by your relay |
+
+Teachers need access to the email address on their account. Links expire after 30 minutes and become invalid after the account password changes. Persist and share the ASP.NET Core Data Protection key ring when hosting the API in containers or on multiple instances so reset links survive restarts and work across instances.
 | `Database:ApplyMigrationsOnStartup` | `false` (`true` in Development) | auto-migrate in Development |
 | `Seed:Enabled` / `Seed:DefaultPassword` / `Seed:EmailDomain` | `false` / empty / `exam-platform.local` | development seeding |
 | `Bootstrap:AdminEmail` / `AdminPassword` / `AdminFullName` | empty | first administrator in production (created only when there are no users) |

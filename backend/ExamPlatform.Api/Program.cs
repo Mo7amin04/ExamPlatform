@@ -5,6 +5,7 @@ using ExamPlatform.Application;
 using ExamPlatform.Application.Common.Exceptions;
 using ExamPlatform.Application.Common.Interfaces;
 using ExamPlatform.Application.Common.Settings;
+using ExamPlatform.Application.Features.Auth;
 using ExamPlatform.Infrastructure;
 using ExamPlatform.Infrastructure.Identity;
 using ExamPlatform.Infrastructure.Persistence;
@@ -24,6 +25,14 @@ builder.Services.AddInfrastructure(configuration);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddDataProtection();
+builder.Services.AddMemoryCache();
+builder.Services.Configure<PasswordRecoveryOptions>(configuration.GetSection("PasswordRecovery"));
+builder.Services.AddSingleton<PasswordResetTokens>();
+builder.Services.AddSingleton<IPasswordResetTokens>(services => services.GetRequiredService<PasswordResetTokens>());
+builder.Services.AddSingleton<IPasswordResetMailer, SmtpPasswordResetMailer>();
+builder.Services.AddSingleton<PasswordRecovery>();
+builder.Services.AddHostedService<PasswordRecovery>(services => services.GetRequiredService<PasswordRecovery>());
 
 // ----- MVC / JSON -----
 builder.Services
@@ -77,15 +86,21 @@ builder.Services
         };
         options.Events = new JwtBearerEvents
         {
-            // Tokens of deactivated or deleted accounts stop working immediately.
+            // A token is valid only while the account is active and its password is current.
             OnTokenValidated = async context =>
             {
                 var userId = context.Principal?.FindFirst(JwtTokenGenerator.UserIdClaimType)?.Value;
+                var credentialVersion = context.Principal?.FindFirst(JwtTokenGenerator.CredentialVersionClaimType)?.Value;
+                if (!Guid.TryParse(userId, out var id) || string.IsNullOrEmpty(credentialVersion))
+                {
+                    context.Fail("The session is no longer valid.");
+                    return;
+                }
                 var db = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
-                var isActive = Guid.TryParse(userId, out var id)
-                               && await db.Users.AnyAsync(u => u.Id == id && u.IsActive, context.HttpContext.RequestAborted);
-                if (!isActive)
-                    context.Fail("The account is inactive.");
+                var passwordHash = await db.Users.Where(u => u.Id == id && u.IsActive)
+                    .Select(u => u.PasswordHash).SingleOrDefaultAsync(context.HttpContext.RequestAborted);
+                if (passwordHash is null || credentialVersion != JwtTokenGenerator.CredentialVersion(passwordHash, jwtSettings))
+                    context.Fail("The session is no longer valid.");
             },
             OnChallenge = async context =>
             {

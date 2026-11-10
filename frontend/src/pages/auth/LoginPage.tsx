@@ -1,4 +1,4 @@
-import { Navigate, useNavigate, useSearchParams } from '@solidjs/router'
+import { A, Navigate, useNavigate, useSearchParams } from '@solidjs/router'
 import { createSignal, Show } from 'solid-js'
 import { InlineAlert } from '~/components/feedback/States'
 import { TextInput } from '~/components/forms/Fields'
@@ -73,6 +73,9 @@ export default function LoginPage() {
           <Button type="submit" class="w-full" loading={submitting()}>
             {t('auth.submit')}
           </Button>
+          <A href="/forgot-password" class="inline-block text-sm font-semibold text-brand-700 hover:underline">
+            {t('Forgot password?')}
+          </A>
         </form>
       </Card>
     </Show>

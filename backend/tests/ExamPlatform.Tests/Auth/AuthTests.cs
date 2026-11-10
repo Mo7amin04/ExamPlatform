@@ -94,6 +94,51 @@ public class AuthTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task ChangePassword_RequiresCurrentPasswordAndRevokesOnlyThatAccountsTokens()
+    {
+        using var isolatedFactory = new ApiFactory();
+        using var anonymous = isolatedFactory.CreateClient();
+        const string changePath = "/api/auth/change-password";
+        const string loginPath = "/api/auth/login";
+        const string mePath = "/api/auth/me";
+        const string newPassword = "Changed@67890";
+
+        async Task<HttpClient> SignIn(string email, string password)
+        {
+            using var response = await anonymous.PostAsJsonAsync(loginPath, new { email, password });
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+            var client = isolatedFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+                json.GetProperty("data").GetProperty("accessToken").GetString());
+            return client;
+        }
+
+        var change = new { currentPassword = ApiFactory.Password, newPassword };
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsJsonAsync(changePath, change)).StatusCode);
+        using var teacher = await SignIn(ApiFactory.TeacherEmail, ApiFactory.Password);
+        using var secondSession = await SignIn(ApiFactory.TeacherEmail, ApiFactory.Password);
+        using var otherUser = await SignIn(ApiFactory.OtherTeacherEmail, ApiFactory.Password);
+
+        using var wrong = await teacher.PostAsJsonAsync(changePath, change with { currentPassword = "incorrect" });
+        Assert.Equal(HttpStatusCode.BadRequest, wrong.StatusCode);
+        var error = await wrong.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("CurrentPassword", error.GetProperty("errors")[0].GetProperty("field").GetString());
+        Assert.Equal(HttpStatusCode.BadRequest, (await teacher.PostAsJsonAsync(changePath, change with { newPassword = "weak" })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await teacher.PostAsJsonAsync(changePath, change with { newPassword = ApiFactory.Password })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await teacher.GetAsync(mePath)).StatusCode);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await teacher.PostAsJsonAsync(changePath, change)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await teacher.GetAsync(mePath)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await secondSession.GetAsync(mePath)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await otherUser.GetAsync(mePath)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsJsonAsync(loginPath,
+            new { email = ApiFactory.TeacherEmail, password = ApiFactory.Password })).StatusCode);
+        using var newSession = await SignIn(ApiFactory.TeacherEmail, newPassword);
+        Assert.Equal(HttpStatusCode.OK, (await newSession.GetAsync(mePath)).StatusCode);
+    }
+
+    [Fact]
     public async Task TeacherCallingAdminEndpoint_Returns403()
     {
         var token = await LoginAsync(ApiFactory.TeacherEmail);

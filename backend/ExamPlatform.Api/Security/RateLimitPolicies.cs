@@ -8,6 +8,9 @@ namespace ExamPlatform.Api.Security;
 public static class RateLimitPolicies
 {
     public const string Login = "login";
+    public const string ChangePassword = "change-password";
+    public const string ForgotPassword = "forgot-password";
+    public const string ResetPassword = "reset-password";
     public const string AI = "ai";
 
     public static void Register(RateLimiterOptions options)
@@ -19,6 +22,17 @@ public static class RateLimitPolicies
 
         // Brute-force protection for credentials, partitioned by client IP.
         options.AddPolicy(Login, http => RateLimitPartition.GetFixedWindowLimiter(
+            http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+
+        options.AddPolicy(ChangePassword, http => RateLimitPartition.GetFixedWindowLimiter(
+            http.User.FindFirst(JwtTokenGenerator.UserIdClaimType)?.Value ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+
+        options.AddPolicy(ForgotPassword, http => RateLimitPartition.GetFixedWindowLimiter(
+            http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(15), QueueLimit = 0 }));
+        options.AddPolicy(ResetPassword, http => RateLimitPartition.GetFixedWindowLimiter(
             http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 

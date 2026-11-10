@@ -6,6 +6,7 @@ import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { NotFoundPage } from '~/pages/errors/ErrorPages'
 
 const LoginPage = lazy(() => import('~/pages/auth/LoginPage'))
+const PasswordRecoveryPage = lazy(() => import('~/pages/auth/PasswordRecoveryPage'))
 const DashboardPage = lazy(() => import('~/pages/dashboard/DashboardPage'))
 const GradeLevelsPage = lazy(() => import('~/pages/grade-levels/GradeLevelsPage'))
 const CoursesPage = lazy(() => import('~/pages/courses/CoursesPage'))
@@ -38,6 +39,12 @@ export function AppRoutes() {
     <>
       <Route path="/login" component={Public}>
         <Route path="/" component={LoginPage} />
+      </Route>
+      <Route path="/forgot-password" component={Public}>
+        <Route path="/" component={() => <PasswordRecoveryPage />} />
+      </Route>
+      <Route path="/reset-password" component={Public}>
+        <Route path="/" component={() => <PasswordRecoveryPage reset />} />
       </Route>
 
       <Route path="/exams/:id/preview" component={ProtectedBare}>

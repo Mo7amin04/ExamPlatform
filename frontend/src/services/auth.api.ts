@@ -7,6 +7,14 @@ export const authApi = {
     unwrap(api.post<ApiResponse<LoginResponse>>('/api/auth/login', { email, password })),
 
   me: () => unwrap(api.get<ApiResponse<CurrentUser>>('/api/auth/me')),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.post<void>('/api/auth/change-password', { currentPassword, newPassword }),
+
+  requestPasswordReset: (email: string) => api.post<void>('/api/auth/forgot-password', { email }),
+
+  resetPassword: (token: string, newPassword: string) =>
+    api.post<void>('/api/auth/reset-password', { token, newPassword }),
 }
 
 export const usersApi = {
