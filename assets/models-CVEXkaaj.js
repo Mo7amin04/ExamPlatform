@@ -1,0 +1,1 @@
+var e=[`MultipleChoice`,`TrueFalse`,`MultipleSelect`,`ShortAnswer`,`Essay`,`FillBlank`,`Matching`,`Ordering`],t=[`Easy`,`Medium`,`Hard`],n=[`Remember`,`Understand`,`Apply`,`Analyze`,`Evaluate`,`Create`],r=[`Draft`,`Approved`,`Archived`],i=[`Quiz`,`Midterm`,`Final`,`Assignment`,`Practice`],a=[`Draft`,`Ready`,`Published`,`Archived`];export{r as a,i,t as n,e as o,a as r,n as t};
